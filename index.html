@@ -40,36 +40,10 @@
   --shadow-e3: 0 4px 8px 3px rgba(0,0,0,0.15), 0 1px 3px 0 rgba(0,0,0,0.30);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --bg:         #0d1525;
-    --bg-alt:     #111d34;
-    --fg:         #dde2f0;
-    --fg-muted:   #8892a8;
-    --fg-border:  rgba(255,255,255,0.1);
-    --heading-clr:#c4cef5;
-    --card-bg:    #172040;
-    --card-bdr:   rgba(255,255,255,0.09);
-    --tint-bg:    rgba(47,77,170,0.22);
-    --border:     rgba(255,255,255,0.1);
-  }
-}
-:root[data-theme="dark"] {
-  --bg:         #0d1525;
-  --bg-alt:     #111d34;
-  --fg:         #dde2f0;
-  --fg-muted:   #8892a8;
-  --fg-border:  rgba(255,255,255,0.1);
-  --heading-clr:#c4cef5;
-  --card-bg:    #172040;
-  --card-bdr:   rgba(255,255,255,0.09);
-  --tint-bg:    rgba(47,77,170,0.22);
-  --border:     rgba(255,255,255,0.1);
-}
 
 /* ── RESET & BASE ───────────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { font-size: 16px; scroll-behavior: smooth; }
+html { font-size: 16px; scroll-behavior: smooth; color-scheme: light; }
 body {
   font-family: var(--ff-b);
   background: var(--bg);
