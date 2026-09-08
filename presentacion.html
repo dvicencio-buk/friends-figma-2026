@@ -170,9 +170,9 @@ html, body {
 .insight-flow { display: flex; flex-direction: column; gap: 0.8vw; max-width: 55rem; }
 .insight-step { display: grid; grid-template-columns: 7rem 1fr; gap: 1rem; align-items: start; }
 .insight-tag { font-size: var(--xs); font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; padding: 0.25rem 0.6rem; border-radius: 4px; text-align: center; margin-top: 0.2rem; }
-.tag-raw { background: rgba(122,132,168,0.15); color: var(--mist); }
-.tag-cross { background: rgba(107,142,240,0.12); color: var(--sky); }
-.tag-insight { background: rgba(47,77,170,0.12); color: var(--brand); }
+.tag-cross   { background: rgba(107,142,240,0.12); color: var(--sky); }
+.tag-insight { background: rgba(47,77,170,0.12);  color: var(--brand); }
+.tag-pain    { background: rgba(232,93,58,0.12);  color: var(--warn); }
 .insight-text { font-size: var(--sm); color: var(--ink); line-height: 1.65; }
 .insight-text strong { font-weight: 700; color: var(--brand); }
 .insight-divider { height: 1px; background: rgba(47,77,170,0.15); margin: 0.2vw 0 0.2vw 8rem; }
@@ -214,20 +214,20 @@ html, body {
 /* ── Staged reveal para slides con etapas ─────────────────────── */
 
 /* Slides 8 y 19: descendientes en grid, data-stage funciona directo */
-.slide[data-i="2"].active > *,
-.slide[data-i="36"].active > * { animation: none; opacity: 1; transform: none; }
-.slide[data-i="2"] [data-stage],
-.slide[data-i="36"] [data-stage] { opacity: 0; transform: translateY(10px); }
-.slide[data-i="2"].active [data-stage],
-.slide[data-i="36"].active [data-stage] {
+.slide[data-i="8"].active > *,
+.slide[data-i="19"].active > * { animation: none; opacity: 1; transform: none; }
+.slide[data-i="8"] [data-stage],
+.slide[data-i="19"] [data-stage] { opacity: 0; transform: translateY(10px); }
+.slide[data-i="8"].active [data-stage],
+.slide[data-i="19"].active [data-stage] {
   animation: fadeUp 0.52s cubic-bezier(0.2, 0, 0, 1) both;
   animation-delay: calc(var(--stage) * 280ms + 80ms);
 }
 
 /* Slide 5: hijos directos → nth-child explícito */
-.slide[data-i="10"].active > :nth-child(1) { animation: fadeUp 0.52s cubic-bezier(0.2,0,0,1) 80ms both; }
-.slide[data-i="10"].active > :nth-child(2) { animation: fadeUp 0.52s cubic-bezier(0.2,0,0,1) 400ms both; }
-.slide[data-i="10"].active > :nth-child(3) { animation: fadeUp 0.52s cubic-bezier(0.2,0,0,1) 720ms both; }
+.slide[data-i="5"].active > :nth-child(1) { animation: fadeUp 0.52s cubic-bezier(0.2,0,0,1) 80ms both; }
+.slide[data-i="5"].active > :nth-child(2) { animation: fadeUp 0.52s cubic-bezier(0.2,0,0,1) 400ms both; }
+.slide[data-i="5"].active > :nth-child(3) { animation: fadeUp 0.52s cubic-bezier(0.2,0,0,1) 720ms both; }
 #picker-wrap { position: relative; }
 #slide-picker { position: absolute; bottom: calc(100% + 0.9rem); right: 0; background: rgba(11,18,30,0.97); backdrop-filter: blur(14px); border: 1px solid rgba(255,255,255,0.11); border-radius: 10px; overflow-y: auto; max-height: 38vh; min-width: 15rem; display: none; box-shadow: 0 10px 36px rgba(0,0,0,0.55); z-index: 300; }
 #slide-picker.open { display: block; }
@@ -244,7 +244,7 @@ html, body {
   <div id="progress" style="width:2%"></div>
   <div id="overlay"></div>
 
-  <div class="slide slide--cover active" data-i="0">
+  <div class="slide slide--cover active" data-i="1">
     <div class="cover-deco"></div>
     <svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 50" style="position:absolute;top:calc(4% + 30px);right:3.5%;width:clamp(72px,7.5vw,108px);height:auto;"><path fill="white" d="M10.2,5.9h4.7v24.3c0,2.8,0.7,4.9,2.1,6.4c1.5,1.6,3.7,2.5,5.9,2.3c2.3,0.1,4.5-0.7,6.1-2.3c1.4-1.5,2.2-3.6,2.2-6.5c0.3-4.5-3.1-8.5-7.5-8.8c-0.4,0-0.8,0-1.2,0c-2.1-0.1-4.2,0.6-5.8,1.9v-4.6c1.9-1,4.1-1.6,6.3-1.6c3.5-0.1,6.8,1.2,9.2,3.6s3.6,5.6,3.6,9.6c0,4.2-1.3,7.5-3.8,9.7c-2.6,2.4-6.1,3.6-9.6,3.5c-3.4,0.2-6.6-1.2-9-3.6c-2.3-2.4-3.4-5.6-3.4-9.7V5.9z"/><path fill="white" d="M62.6,43h-9.1c-3.9,0-6.7-0.6-8.4-1.8c-1.4-0.8-2.4-2.1-2.9-3.6c-0.4-1.9-0.7-3.7-0.6-5.7V17.5h4.7v14.2c0,0.7,0,1.2,0.1,1.6c0.1,0.6,0.2,1.2,0.3,1.7c0.2,0.6,0.5,1.2,0.9,1.7c0.5,0.5,1,0.9,1.7,1.2c0.8,0.3,1.8,0.5,2.7,0.5h6V17.5h4.6L62.6,43z"/><path fill="white" d="M83.9,17.5h5.2l-6.4,11c4.3,1.2,6.5,4.7,6.5,10.6V43h-4.7v-3.9c0.1-2-0.7-4.1-2.1-5.5c-1.4-1.3-3.4-1.9-5.9-1.9c-0.8,0-1.7,0.1-2.5,0.2v11.1h-4.7V5.9H74v21.7c1.4-0.2,3-0.2,4.4,0L83.9,17.5z"/><path fill="white" d="M5.1,24.7c0,1.4-1.1,2.5-2.5,2.5S0,26.2,0,24.7c0-1.4,1.1-2.5,2.5-2.5S5.1,23.3,5.1,24.7z"/><path fill="white" d="M98,24.7c0,1.4-1.1,2.5-2.5,2.5c-1.4,0-2.5-1.1-2.5-2.5c0-1.4,1.1-2.5,2.5-2.5C96.9,22.2,98,23.3,98,24.7z"/></svg>
     <h1 class="cover-title">El verdadero ROI de la IA es el criterio</h1>
@@ -255,7 +255,7 @@ html, body {
     <p class="cover-meta">Buk · 2026</p>
   </div>
 
-  <div class="slide slide--light" data-i="1" style="gap:0.8vw;padding:4% 7%;">
+  <div class="slide slide--light" data-i="2" style="gap:0.8vw;padding:4% 7%;">
     <h2 class="slide-title">Buk</h2>
 
     <!-- Bloque Buk: card con borde que lo delimita como entidad -->
@@ -300,11 +300,11 @@ html, body {
     </div>
   </div>
 
-  <div class="slide slide--dark" data-i="15">
+  <div class="slide slide--dark" data-i="3">
     <p class="statement">Más IA no es el objetivo.<br><em>Automatizar lo obvio.<br>Invertir en criterio.<br>Construir mejor producto.</em></p>
   </div>
 
-  <div class="slide slide--light" data-i="6">
+  <div class="slide slide--light" data-i="4">
     <h2 class="slide-title">Revisamos los procesos del equipo para entender el nivel de certidumbre y operatividad, y dirigir nuestros esfuerzos</h2>
     <div class="compare-grid" style="margin-top:0.5vw;">
       <div class="compare-col">
@@ -330,7 +330,7 @@ html, body {
     </div>
   </div>
 
-  <div class="slide slide--light" data-i="10" style="gap:1.2vw;padding:4.5% 6%;">
+  <div class="slide slide--light" data-i="5" style="gap:1.2vw;padding:4.5% 6%;">
     <h2 class="slide-title" data-stage style="--stage:0">Hemos generado herramientas <br>que nos permiten ser cada vez más estratégicos.</h2>
 
     <!-- Timeline de etapas (grid de 5 columnas iguales para alinear con las cards) -->
@@ -458,11 +458,11 @@ html, body {
     </div>
   </div>
 
-  <div class="slide slide--dark" data-i="11">
+  <div class="slide slide--dark" data-i="6">
     <p class="statement">Ahora, a lo que vinimos...<br><em>Caso 1</em></p>
   </div>
 
-  <div class="slide slide--light" data-i="14">
+  <div class="slide slide--light" data-i="7">
     <h2 class="slide-title">Problema: Contamos con 2 UX writers para 50 equipos de producto y buscamos mantener un estándar transversal</h2>
     <div style="display:flex;flex-direction:column;gap:1vw;max-width:66rem;margin-top:0.5vw;">
 
@@ -506,7 +506,7 @@ html, body {
     </div>
   </div>
 
-  <div class="slide slide--light" data-i="2" style="gap:1.1vw;padding:4% 7%;">
+  <div class="slide slide--light" data-i="8" style="gap:1.1vw;padding:4% 7%;">
     <h2 class="slide-title" data-stage style="--stage:0">¿Cómo lo abordamos?<br>Ciclo de valor</h2>
 
     <div style="width:100%;display:grid;grid-template-columns:1fr auto 1fr auto 1fr auto 1fr;align-items:stretch;">
@@ -547,13 +547,13 @@ html, body {
   </div>
 
 
-<div class="slide slide--demo" data-i="13">
+<div class="slide slide--demo" data-i="9">
     <div class="demo-ring"><div class="demo-ring-dot"></div></div>
     <div class="demo-label">Demo 01</div>
     <div class="demo-sub">UX Writing Score</div>
   </div>
 
-  <div class="slide slide--light" data-i="20" data-skip="true" style="gap:1.2vw;padding:4% 7%;">
+  <div class="slide slide--light" data-i="100" data-skip="true" style="gap:1.2vw;padding:4% 7%;">
     <p class="eyebrow-label" style="color:var(--brand);">Impacto estratégico UXW</p>
     <h2 class="slide-title">¿Qué logramos?</h2>
     <div style="width:100%;display:grid;grid-template-columns:repeat(3,1fr);gap:1.4vw;margin-top:0.3vw;">
@@ -582,13 +582,13 @@ html, body {
     </div>
   </div>
   
-   <div class="slide slide--dark" data-i="18">
+   <div class="slide slide--dark" data-i="10">
     <p class="statement">Ya estábamos usando IA, pero...<br><em>¿Cómo conectarla al conocimiento que ya teníamos?</em></p>
   </div>
   <div class="slide slide--dark" data-i="11">
     <p class="statement">Caso 2<br><em>Automatizatizando la fricción alrededor del discovery</em></p>
 </div>
-  <div class="slide slide--light" data-i="21" style="justify-content:center;">
+  <div class="slide slide--light" data-i="12" style="justify-content:center;">
     <h2 class="slide-title" style="margin-bottom:1.8vw;">Dos piezas. Una arquitectura.</h2>
     <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:1.5vw;max-width:64rem;width:100%;align-items:stretch;">
 
@@ -639,7 +639,7 @@ html, body {
 
 
 
-  <div class="slide slide--light" data-i="8">
+  <div class="slide slide--light" data-i="13">
     <h2 class="slide-title">Si la herramienta aleja al diseñador del cliente, para nosotros fracasó.</h2>
     <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:2vw;align-items:center;max-width:58rem;margin-top:1vw;">
       <div>
@@ -662,7 +662,7 @@ html, body {
     <p class="bridge-note" style="max-width:62ch;">La meta es llegar antes a mejores preguntas e insights, no reemplazar la exposición al problema.</p>
   </div>
 
-  <div class="slide slide--light" data-i="35" style="gap:1.6vw;padding:5% 7%;justify-content:center;">
+  <div class="slide slide--light" data-i="14" style="gap:1.6vw;padding:5% 7%;justify-content:center;">
     <h2 class="slide-title">Para esto, les hablaremos de 2 herramientas</h2>
     <div style="width:100%;display:grid;grid-template-columns:1fr 1fr;gap:1.6vw;margin-top:0.5vw;">
 
@@ -685,7 +685,7 @@ html, body {
     </div>
   </div>
 
-<div class="slide slide--brand" data-i="31">
+<div class="slide slide--brand" data-i="15">
     <div class="block-rule"></div>
     <h2 class="block-title">Synthetic Users</h2>
     <p class="block-sub">Una conversación con los datos reales de tu organización</p>
@@ -693,18 +693,19 @@ html, body {
 
   
 
-  <div class="slide slide--light" data-i="32">
+  <div class="slide slide--light" data-i="16">
     <span class="ref-tag" style="border-color:rgba(47,77,170,0.35);color:var(--brand);">Dolor</span>
     <h2 class="slide-title">No solo es agendar entrevistas,<br> es llegar bien preparado.</h2>
-    <div class="slide-body">
-      <div class="row"><span class="icon">·</span><span>Conseguir la entrevista es <strong>"super costoso"</strong>.</span></div>
-      <div class="row"><span class="icon">·</span><span>Cuando por fin ocurre, llegas con hipótesis que <strong>no pudiste tensar antes</strong>.</span></div>
-      <div class="row"><span class="icon">·</span><span>Una pregunta mal formulada <strong>quema la sesión</strong>.</span></div>
-      <br>
+    <div class="insight-flow" style="margin-top:2.5vw;">
+      <div class="insight-step"><span class="insight-tag tag-pain">Acceso</span><p class="insight-text">Conseguir la entrevista es <strong>"super costoso"</strong>.</p></div>
+      <div class="insight-divider"></div>
+      <div class="insight-step"><span class="insight-tag tag-pain">Preparación</span><p class="insight-text">Cuando por fin ocurre, llegas con hipótesis que <strong>no pudiste tensar antes</strong>.</p></div>
+      <div class="insight-divider"></div>
+      <div class="insight-step"><span class="insight-tag tag-pain">Riesgo</span><p class="insight-text">Una pregunta mal formulada <strong>quema la sesión</strong>.</p></div>
     </div>
   </div>
 
-  <div class="slide slide--light" data-i="33">
+  <div class="slide slide--light" data-i="17">
     <span class="ref-tag" style="border-color:rgba(47,77,170,0.35);color:var(--brand);">Para qué existe</span>
     <p class="goal-line">Conversas con un usuario sintético, construido desde datos reales de tu organización, no de internet, para tensar hipótesis y pre-testear tus preguntas.</p>
     <div class="goal-grid">
@@ -714,12 +715,12 @@ html, body {
     </div>
   </div>
 
-  <div class="slide slide--dark" data-i="34">
+  <div class="slide slide--dark" data-i="18">
     <p class="statement">Al usuario sintético no lo inventamos,<br>lo construimos desde 6 fuentes.<br><em>No es un usuario genérico de internet.</em></p>
   </div>
 
 
-  <div class="slide slide--dark" style="flex-direction:column;gap:1.4vw;padding:4% 5.5%;align-items:flex-start;justify-content:center;text-align:left;" data-i="36">
+  <div class="slide slide--dark" style="flex-direction:column;gap:1.4vw;padding:4% 5.5%;align-items:flex-start;justify-content:center;text-align:left;" data-i="19">
     <div class="cog-header" data-stage style="--stage:0">
       <p class="cog-eyebrow">¿Cómo lograr que responda como un usuario real? Modelo cognitivo Tourangeau, Rips y Rasinski</p>
       <p class="cog-title">El usuario sintético articula <em>cómo interpreta</em> la pregunta</p>
@@ -770,13 +771,13 @@ html, body {
   </div>
 
 
-  <div class="slide slide--demo" data-i="38">
+  <div class="slide slide--demo" data-i="20">
     <div class="demo-ring"><div class="demo-ring-dot"></div></div>
     <div class="demo-label">Demo en vivo</div>
     <div class="demo-sub">Synthetic Users</div>
   </div>
 
-  <div class="slide slide--dark" data-i="39">
+  <div class="slide slide--dark" data-i="21">
     <p class="statement">Llegamos a las entrevistas<br>con <em>mejores preguntas</em>.<br>Y con menos suposiciones.</p>
   </div>  
   
@@ -789,13 +790,14 @@ html, body {
   <div class="slide slide--light" data-i="23">
     <span class="ref-tag" style="border-color:rgba(47,77,170,0.35);color:var(--brand);">Dolor</span>
     <h2 class="slide-title">Un research con cada misión, por cada flujo. Semanas de trabajo.</h2>
-    <div class="slide-body">
-      <div class="row"><span class="icon">·</span><span>Leer <strong>cientos de conversaciones de soporte</strong>, una por una, y descartar las que están mal clasificadas.</span></div>
-      <div class="row"><span class="icon">·</span><span>Revisar el comportamiento real en una herramienta poco intuitiva, sesión por sesión.</span></div>
-      <div class="row"><span class="icon">·</span><span>Pedir los datos de uso a otro equipo, o pelear con una curva de aprendizaje bien empinada.</span></div>
-      <div class="row"><span class="icon">·</span><span>Cruzar todo a mano y redactar el informe.</span></div>
-      <br>
-      <p><strong>Semanas de trabajo. Y el resultado dependía de quién lo hiciera y de cuánto tiempo tuviera.</strong></p>
+    <div class="insight-flow" style="margin-top:2.5vw;">
+      <div class="insight-step"><span class="insight-tag tag-pain">SAC</span><p class="insight-text">Leer <strong>cientos de conversaciones de soporte</strong>, una por una, y descartar las que están mal clasificadas.</p></div>
+      <div class="insight-divider"></div>
+      <div class="insight-step"><span class="insight-tag tag-pain">Clarity</span><p class="insight-text">Revisar el comportamiento real en una herramienta poco intuitiva, sesión por sesión.</p></div>
+      <div class="insight-divider"></div>
+      <div class="insight-step"><span class="insight-tag tag-pain">Amplitude</span><p class="insight-text">Pedir los datos de uso a otro equipo, o pelear con una curva de aprendizaje bien empinada.</p></div>
+      <div class="insight-divider"></div>
+      <div class="insight-step"><span class="insight-tag tag-pain">Síntesis</span><p class="insight-text">Cruzar todo a mano y redactar el informe. El resultado dependía de quién lo hiciera y de cuánto tiempo tuviera.</p></div>
     </div>
   </div>
 
@@ -809,23 +811,23 @@ html, body {
     <p class="goal-line">Una lectura honesta de qué le pasa al usuario, construida desde datos reales, representativos y masivos. En horas, no semanas.</p>
     <div class="goal-grid">
       <div class="goal-item"><div class="goal-k">Qué recibe</div><div class="goal-v">Módulo · país · período · el foco de lo que quieres entender</div></div>
-      <div class="goal-item"><div class="goal-k">Qué entrega</div><div class="goal-v">Un informe narrativo: síntesis del módulo, hallazgos triangulados entre fuentes y lo que los datos no alcanzaron a responder</div></div>
-      <div class="goal-item"><div class="goal-k">Qué garantiza</div><div class="goal-v">Representatividad estadística (al abarcar más datos), evidencia que cita su fuente (trazabilidad) y análisis consistente (se basa en los mismos datos)</div></div>
+      <div class="goal-item"><div class="goal-k">Qué entrega</div><div class="goal-v">Un informe narrativo con síntesis del módulo, hallazgos triangulados y lo que los datos no alcanzaron a responder. Cada hallazgo describe cómo el usuario entiende la tarea frente a cómo el sistema la resuelve: causa documentada, efecto medido, fuente citada.</div></div>
+      <div class="goal-item"><div class="goal-k">Qué garantiza</div><div class="goal-v">Representatividad estadística, trazabilidad y consistencia: un hallazgo es válido solo cuando el mismo patrón se repite en múltiples fuentes — soporte, comportamiento y analítica alineados en el mismo módulo y período.</div></div>
     </div>
   </div>
 
 
-  <div class="slide slide--demo" data-i="29">
+  <div class="slide slide--demo" data-i="26">
     <div class="demo-ring"><div class="demo-ring-dot"></div></div>
     <div class="demo-label">Demo en vivo</div>
     <div class="demo-sub">User Discovery Report</div>
   </div>
 
-  <div class="slide slide--light" data-i="27">
+  <div class="slide slide--light" data-i="101" data-skip="true">
     <span class="ref-tag" style="border-color:rgba(47,77,170,0.35);color:var(--brand);">¿Qué logramos?</span>
     <h2 class="slide-title">Pasar de un número como titular, al entendimiento del problema con evidencia.</h2>
     <div class="insight-flow" style="margin-top:5vw;">
-      <div class="insight-step"><span class="insight-tag tag-raw">Dato crudo</span><p class="insight-text">Cientos o miles de señales simultáneas: conversaciones de soporte, eventos de analítica, clics de comportamiento, transcripciones de entrevistas. Volumen imposible de procesar manualmente.</p></div>
+      <div class="insight-step"><span class="insight-tag tag-pain">Dato crudo</span><p class="insight-text">Cientos o miles de señales simultáneas: conversaciones de soporte, eventos de analítica, clics de comportamiento, transcripciones de entrevistas. Volumen imposible de procesar manualmente.</p></div>
       <div class="insight-divider"></div>
       <div class="insight-step"><span class="insight-tag tag-cross">Cruce</span><p class="insight-text">La IA identifica patrones que se repiten en múltiples fuentes para el mismo módulo y período. Una queja en soporte que coincide con fricción en Clarity y una caída en analítica: eso es señal real.</p></div>
       <div class="insight-divider"></div>
@@ -834,11 +836,11 @@ html, body {
   </div>
 
  
-  <div class="slide slide--dark" data-i="40">
+  <div class="slide slide--dark" data-i="27">
     <p class="statement">El equipo lo midió.<br>Más IA integrada al flujo real:<br><em>más autonomía,<br>menos fricción.</em></p>
   </div>
 
-  <div class="slide slide--light" data-i="17" style="gap:0.8vw;padding:3.5% 6%;">
+  <div class="slide slide--light" data-i="28" style="gap:0.8vw;padding:3.5% 6%;">
     <span class="ref-tag">Check interno de productividad</span>
     <h2 class="slide-title">Lo que cambió para el equipo que ya integró IA</h2>
 
@@ -994,13 +996,13 @@ html, body {
 
   
 
-  <div class="slide slide--brand" data-i="42">
+  <div class="slide slide--brand" data-i="29">
     <div class="block-rule"></div>
     <h2 class="block-title">Lo que te llevas</h2>
     <p class="block-sub">Aplicable en cualquier equipo de diseño</p>
   </div>
 
-  <div class="slide slide--light" data-i="16">
+  <div class="slide slide--light" data-i="30">
     <h2 class="slide-title">Las soluciones que escalan siguen el mismo patrón</h2>
     <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:1vw;max-width:60rem;margin-top:0.5vw;">
       <div class="goal-item"><div class="goal-k">01</div><div class="goal-v">Encontrar dónde falta capacidad</div></div>
@@ -1040,7 +1042,7 @@ html, body {
     <button id="fullscreenBtn" title="Pantalla completa" onclick="toggleFullscreen()">⛶</button>
   </div>
 
-  <div class="slide slide--brand" data-i="46">
+  <div class="slide slide--brand" data-i="31">
     <div class="block-rule"></div>
     <h2 class="block-title">Recursos + contacto</h2>
     <p class="block-sub">Escanea el QR para acceder a los recursos mencionados en esta sesión</p>
