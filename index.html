@@ -1,3 +1,4 @@
+<meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>El verdadero ROI</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -67,8 +68,6 @@ a:focus-visible { outline: 2px solid var(--brand); outline-offset: 3px; border-r
 /* ── HERO ───────────────────────────────────────────────────────── */
 .hero {
   background-color: var(--bg-hero);
-  /*background-image: radial-gradient(circle, rgba(107,142,240,0.18) 1px, transparent 1px);*/
-  background-size: 26px 26px;
   padding: clamp(2.75rem, 7vw, 5.5rem) 0 clamp(2.5rem, 6vw, 5rem);
   position: relative;
 }
@@ -129,7 +128,6 @@ a:focus-visible { outline: 2px solid var(--brand); outline-offset: 3px; border-r
 
 /* ── SECTION CHROME ─────────────────────────────────────────────── */
 section { background: var(--bg-alt); padding: clamp(2.5rem, 6vw, 4.5rem) 0; }
-section.alt { background: var(--bg-alt); }
 
 .label {
   font-size: 0.7rem;
@@ -337,16 +335,25 @@ a.speaker-name:hover { color: var(--brand); text-decoration: none; }
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;
-  font-size: 0.68rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--fg-muted);
-  border: 1px solid var(--fg-border);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  color: #fff;
+  background: var(--brand);
+  border: 1.5px solid var(--brand);
   border-radius: 100px;
-  padding: 0.18rem 0.65rem;
+  padding: 0.22rem 0.75rem;
   align-self: flex-start;
   margin-top: 0.6rem;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.14s, border-color 0.14s;
+}
+a.rcard-badge:hover {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: #fff;
+  text-decoration: none;
 }
 
 /* ── REFERENCE ──────────────────────────────────────────────────── */
@@ -523,30 +530,29 @@ footer {
 <!-- RESOURCES -->
 <section>
   <div class="wrap">
-    <span class="label">Material de la charla</span>
-    <h2 class="h2">Recursos para llevar</h2>
+    <span class="label">Recursos compartidos</span>
+    <h2 class="h2">Contenido para llevar</h2>
 
     <div class="resources">
       <div class="rcard">
-        <p class="rcard-type">Infografía</p>
-        <p class="rcard-name">Modelo cognitivo del usuario sintético</p>
-        <p class="rcard-desc">Cómo un usuario sintético articula respuestas humanas: la arquitectura de datos reales y el modelo cognitivo de 4 etapas que impide que la IA responda como IA.</p>
-        <span class="rcard-badge">Próximamente</span>
+        <p class="rcard-type">Podcast</p>
+        <p class="rcard-name">El proceso de diseño ha muerto. Esto es lo que lo está reemplazando.</p>
+        <p class="rcard-desc">Jenny Wen de Anthropic explica por qué el proceso de diseño tradicional está muerto, cómo los ingenieros están impulsando la evolución de este rol.</p>
+        <a href="https://www.lennysnewsletter.com/p/the-design-process-is-dead" class="rcard-badge" target="_blank" rel="noopener noreferrer">Escuchar</a>
       </div>
 
       <div class="rcard">
-        <p class="rcard-type">Framework</p>
-        <p class="rcard-name">IA con criterio: guía para equipos de diseño</p>
-        <p class="rcard-desc">El patrón de 5 pasos para integrar IA en el flujo de trabajo de diseño. Incluye qué medir y qué no. Replicable en cualquier equipo.</p>
-        <span class="rcard-badge">Próximamente</span>
+        <p class="rcard-type">Podcast</p>
+        <p class="rcard-name">Este es el mejor momento de la historia para ser diseñador</p>
+        <p class="rcard-desc">Ian Silber, jefe de diseño de producto de OpenAI, explica por qué este es el mejor momento de la historia para ser diseñador, dónde los humanos aún superan a la IA y cómo escapar de la sobrecarga.</p>
+        <a href="https://www.lennysnewsletter.com/p/openais-head-of-design-this-is-the" class="rcard-badge" target="_blank" rel="noopener noreferrer">Escuchar</a>
       </div>
-    </div>
-
-    <div class="ref-block">
-      <p class="ref-label">Referencia bibliográfica</p>
-      <p class="ref-citation">Tourangeau, R., Rips, L. J., &amp; Rasinski, K. (2000). <em>The Psychology of Survey Response</em>. Cambridge University Press. <a href="https://doi.org/10.1017/CBO9780511819322" target="_blank" rel="noopener" style="color:var(--brand);font-size:0.82rem;">doi.org/10.1017/CBO9780511819322</a></p>
-      <p class="ref-note">Modelo cognitivo de cuatro etapas (comprensión, recuperación, juicio y respuesta) que describe cómo una persona procesa una pregunta antes de responderla. Al aplicarlo al usuario sintético, cada etapa se alimenta de fuentes reales de la organización, logrando respuestas con las mismas lagunas y sesgos que tendría un usuario real.</p>
-      <p class="ref-citation" style="margin-top:0.6rem;">Hinck, M., King, G. et al. (2026). Cognitive model extensions for survey interpretation Mᵢ(Q). <a href="https://gking.harvard.edu/debrief" target="_blank" rel="noopener" style="color:var(--brand);font-size:0.82rem;">gking.harvard.edu/debrief</a></p>
+      <div class="rcard">
+        <p class="rcard-type">Lectura</p>
+        <p class="rcard-name">Modelo cognitivo Tourangeau de cuatro etapas</p>
+        <p class="rcard-desc">Aplicado al usuario sintético, cada etapa se alimenta de fuentes reales de la organización, logrando respuestas con las mismas lagunas y sesgos que tendría un usuario real.</p>
+        <a href="#" class="rcard-badge">Ver más</a>
+      </div>
     </div>
   </div>
 </section>
