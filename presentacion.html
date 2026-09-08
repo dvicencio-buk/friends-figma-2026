@@ -1,0 +1,1187 @@
+<title>IA que conoce tu trabajo</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@0,300;0,400;0,600;0,700;0,900;1,400&display=swap">
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --dark:   #0d1520;
+  --dark2:  #111c2d;
+  --brand:  #2f4daa;
+  --sky:    #6b8ef0;
+  --paper:  #f4f5fa;
+  --ink:    #1e2432;
+  --mist:   #7a84a8;
+  --warn:   #e85d3a;
+  --chalk:  #ffffff;
+  --ff: 'Source Sans 3', 'Source Sans Pro', system-ui, sans-serif;
+  --mono: 'SFMono-Regular', ui-monospace, Menlo, Consolas, monospace;
+  --xs:   0.70rem;
+  --sm:   0.86rem;
+  --base: 1rem;
+  --lg:   1.25rem;
+  --xl:   1.65rem;
+  --2xl:  2.25rem;
+  --3xl:  3.0rem;
+  --hero: 3.6rem;
+}
+
+html { font-size: clamp(10px, 1.35vw, 22px); }
+
+html, body {
+  width: 100%; height: 100%;
+  display: flex; align-items: center; justify-content: center;
+  background: #000;
+  font-family: var(--ff);
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+}
+
+#stage {
+  position: relative;
+  width: 100%;
+  max-width: min(100vw, 177.78vh);
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+}
+
+#overlay {
+  position: absolute; inset: 0;
+  background: var(--dark);
+  opacity: 0;
+  transition: opacity 0.22s ease;
+  z-index: 200;
+  pointer-events: none;
+}
+
+.slide { position: absolute; inset: 0; display: none; }
+.slide.active { display: flex; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.slide.active > * { animation: fadeUp 0.5s cubic-bezier(0.2, 0, 0, 1) both; }
+.slide.active > *:nth-child(1) { animation-delay: 0.08s }
+.slide.active > *:nth-child(2) { animation-delay: 0.2s }
+.slide.active > *:nth-child(3) { animation-delay: 0.32s }
+.slide.active > *:nth-child(4) { animation-delay: 0.42s }
+.slide.active > *:nth-child(5) { animation-delay: 0.50s }
+.slide.active > *:nth-child(6) { animation-delay: 0.56s }
+.slide.active > *:nth-child(7) { animation-delay: 0.62s }
+
+.slide--dark { background: var(--dark); align-items: center; justify-content: center; padding: 6% 10%; text-align: center; flex-direction: column; gap: 2vw; }
+.statement { font-size: var(--2xl); font-weight: 700; color: var(--chalk); line-height: 1.2; text-wrap: balance; max-width: 20ch; letter-spacing: -0.01em; }
+.statement em { font-style: normal; color: var(--sky); }
+.statement strong { color: var(--warn); font-style: normal; }
+.sub { font-size: var(--base); font-weight: 300; color: var(--mist); text-wrap: balance; max-width: 50ch; line-height: 1.6; }
+.eyebrow-label { font-size: var(--xs); font-weight: 700; color: var(--sky); letter-spacing: 0.18em; text-transform: uppercase; }
+
+.slide--brand { background: var(--brand); align-items: center; justify-content: center; flex-direction: column; gap: 1vw; text-align: center; padding: 6%; }
+.block-label { font-size: var(--xs); font-weight: 600; color: rgba(255,255,255,0.45); letter-spacing: 0.18em; text-transform: uppercase; }
+.block-rule { width: 2.5rem; height: 2px; background: rgba(255,255,255,0.25); margin: 0.3vw 0; }
+.block-title { font-size: var(--2xl); font-weight: 700; color: var(--chalk); letter-spacing: -0.02em; }
+.block-sub { font-size: var(--sm); color: rgba(255,255,255,0.55); font-weight: 300; margin-top: 0.5vw; max-width: 40ch; line-height: 1.5; text-wrap: balance; }
+
+.slide--light { background: var(--paper); flex-direction: column; justify-content: center; padding: 5% 7%; gap: 1.6vw; }
+.slide-title { font-size: var(--xl); font-weight: 700; color: var(--brand); line-height: 1.2; text-wrap: balance; max-width: 100%; letter-spacing: -0.01em; border-left: 4px solid var(--brand); padding-left: 1rem; }
+.slide-body { font-size: var(--base); color: var(--ink); line-height: 1.75; max-width: 100%; }
+.slide-body strong { font-weight: 700; }
+.row { display: flex; gap: 0.8rem; margin-bottom: 0.5rem; align-items: flex-start; }
+.row .icon { flex-shrink: 0; width: 1.4rem; text-align: center; }
+.tool-note { font-size: var(--xs); color: var(--mist); font-weight: 400; margin-left: 0.1rem; }
+
+.slide--cover { background: var(--dark); flex-direction: column; justify-content: flex-end; padding: 6% 7%; gap: 0; }
+.cover-eyebrow { font-size: var(--sm); font-weight: 600; color: var(--sky); letter-spacing: 0.14em; text-transform: uppercase; margin-bottom: 1.2vw; }
+.cover-title { font-size: var(--3xl); font-weight: 900; color: var(--chalk); line-height: 1.05; letter-spacing: -0.025em; max-width: 14ch; text-wrap: balance; }
+.cover-subtitle { font-size: var(--lg); font-weight: 300; color: var(--mist); margin-top: 1.4vw; line-height: 1.5; }
+.cover-bar { width: 3rem; height: 4px; background: var(--brand); margin-top: 2.4vw; margin-bottom: 1.8vw; }
+.cover-meta { font-size: var(--sm); color: rgba(255,255,255,0.32); }
+.cover-deco { position: absolute; right: -8vw; top: -8vw; width: 58vh; height: 58vh; border-radius: 50%; border: 1.5px solid rgba(107,142,240,0.13); pointer-events: none; animation: rotateDeco 30s linear infinite; }
+.cover-deco::after { content: ''; position: absolute; inset: 12%; border-radius: 50%; border: 1px solid rgba(107,142,240,0.08); }
+@keyframes rotateDeco { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+.stat-row { display: grid; grid-template-columns: repeat(3, auto); gap: 2vw; max-width: 44rem; }
+.stat-card { border-left: 3px solid var(--brand); padding: 0.5vw 1vw; transition: border-color 0.2s; }
+.stat-card:hover { border-color: var(--sky); }
+.stat-num { font-size: var(--xl); font-weight: 900; color: var(--brand); letter-spacing: -0.02em; line-height: 1; }
+.stat-label { font-size: var(--xs); font-weight: 600; color: var(--mist); letter-spacing: 0.08em; text-transform: uppercase; margin-top: 0.2vw; }
+.context-body { font-size: var(--sm); color: var(--ink); line-height: 1.7; max-width: 58ch; display: flex; flex-direction: column; gap: 0.6vw; }
+.bridge-note { font-size: var(--sm); color: var(--brand); font-weight: 600; border-top: 1px solid rgba(47,77,170,0.2); padding-top: 0.8vw; margin-top: 0.4vw; line-height: 1.5; }
+
+.slide--warn { background: var(--dark); align-items: center; justify-content: center; flex-direction: column; text-align: center; padding: 6%; gap: 1.5vw; }
+.warn-tag { font-size: var(--xs); font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: var(--warn); padding: 0.3rem 1rem; border: 1.5px solid var(--warn); border-radius: 100px; }
+.warn-statement { font-size: var(--2xl); font-weight: 700; color: var(--chalk); line-height: 1.2; text-wrap: balance; max-width: 20ch; }
+.warn-statement span { color: var(--warn); }
+
+.slide--demo { background: var(--dark2); align-items: center; justify-content: center; flex-direction: column; gap: 2vw; }
+.demo-ring { width: 5vw; height: 5vw; min-width: 3rem; min-height: 3rem; border-radius: 50%; border: 2px solid var(--sky); animation: pulse 2.2s ease-in-out infinite; display: flex; align-items: center; justify-content: center; position: relative; }
+.demo-ring::before { content: ''; position: absolute; inset: -0.8vw; border-radius: 50%; border: 1px solid rgba(107,142,240,0.22); animation: pulse 2.2s ease-in-out infinite 0.5s; }
+.demo-ring-dot { width: 0.8vw; height: 0.8vw; min-width: 0.5rem; min-height: 0.5rem; border-radius: 50%; background: var(--sky); }
+@keyframes pulse { 0%, 100% { opacity: 0.4; transform: scale(0.95); } 50% { opacity: 1; transform: scale(1.05); } }
+.demo-label { font-size: var(--lg); font-weight: 600; color: var(--chalk); letter-spacing: 0.04em; }
+.demo-sub { font-size: var(--sm); font-weight: 300; color: var(--mist); }
+
+.slide--closing { background: var(--dark); align-items: center; justify-content: center; flex-direction: column; gap: 2vw; padding: 6%; text-align: center; }
+.closing-statement { font-size: var(--hero); font-weight: 900; color: var(--chalk); line-height: 1.05; letter-spacing: -0.03em; text-wrap: balance; max-width: 16ch; }
+.closing-statement em { font-style: normal; color: var(--sky); }
+.closing-sub { font-size: var(--base); font-weight: 300; color: var(--mist); max-width: 44ch; line-height: 1.6; }
+
+.compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5vw; max-width: 60rem; }
+.compare-col { background: rgba(0,0,0,0.05); border-radius: 8px; padding: 1.5vw; transition: transform 0.2s ease, background 0.2s ease; }
+.compare-col:hover { transform: translateY(-3px); background: rgba(0,0,0,0.08); }
+.col-label { font-size: var(--sm); font-weight: 700; color: var(--brand); letter-spacing: 0.06em; margin-bottom: 1vw; }
+.col-label.muted { color: var(--mist); }
+.compare-col ul { list-style: none; display: flex; flex-direction: column; gap: 0.5vw; }
+.compare-col li { font-size: var(--sm); color: var(--ink); padding-left: 1rem; position: relative; }
+.compare-col li::before { content: '·'; position: absolute; left: 0; color: var(--mist); }
+
+.persona-card { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5vw; max-width: 55rem; }
+.persona-primary { border-left: 4px solid var(--brand); padding: 1.2vw 1.4vw; background: rgba(47,77,170,0.07); border-radius: 0 8px 8px 0; }
+.p-name { font-size: var(--lg); font-weight: 700; color: var(--brand); }
+.p-role { font-size: var(--xs); color: var(--mist); margin-bottom: 0.8vw; }
+.p-detail { font-size: var(--sm); color: var(--ink); line-height: 1.6; }
+.persona-secondary { display: flex; flex-direction: column; gap: 0.8vw; }
+.pain-block { padding: 0.8vw 1vw; background: rgba(0,0,0,0.05); border-radius: 6px; transition: background 0.2s ease; }
+.pain-block:hover { background: rgba(0,0,0,0.09); }
+.pain-tag { font-size: var(--xs); font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--mist); margin-bottom: 0.2vw; }
+.pain-text { font-size: var(--sm); color: var(--ink); line-height: 1.55; }
+.source-note { font-size: var(--xs); color: var(--mist); }
+
+.quote-block { border-left: 3px solid var(--sky); padding: 1vw 1.5vw; background: rgba(107,142,240,0.07); border-radius: 0 6px 6px 0; font-size: var(--base); color: var(--ink); font-style: italic; line-height: 1.7; max-width: 52ch; }
+.quote-source { font-size: var(--xs); color: var(--mist); font-style: normal; margin-top: 0.4vw; }
+.quote-after { font-size: var(--sm); color: var(--mist); line-height: 1.6; max-width: 55ch; }
+
+.cog-header { display: flex; flex-direction: column; gap: 0.5vw; }
+.cog-eyebrow { font-size: var(--xs); font-weight: 700; color: var(--sky); letter-spacing: 0.15em; text-transform: uppercase; }
+.cog-title { font-size: var(--xl); font-weight: 700; color: var(--chalk); line-height: 1.2; max-width: 22ch; text-wrap: balance; }
+.cog-title em { font-style: normal; color: var(--sky); }
+.cog-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2vw; max-width: 60rem; }
+.cog-step { background: rgba(255,255,255,0.04); border-radius: 8px; padding: 1.4vw; border-top: 2px solid rgba(107,142,240,0.35); transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease; cursor: default; }
+.cog-step:hover { transform: translateY(-4px); border-top-color: var(--sky); background: rgba(255,255,255,0.07); }
+.cog-num { font-size: var(--xs); font-weight: 700; color: var(--sky); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 0.3vw; }
+.cog-name { font-size: var(--sm); font-weight: 700; color: var(--chalk); margin-bottom: 0.3vw; }
+.cog-desc { font-size: var(--xs); color: var(--mist); line-height: 1.55; }
+.cog-key { color: var(--sky); }
+
+.pc-line { display: flex; gap: 0.6vw; flex-wrap: wrap; align-items: center; }
+.pc-chip { font-size: var(--xs); font-weight: 600; color: var(--brand); background: rgba(47,77,170,0.1); border: 1px solid rgba(47,77,170,0.25); border-radius: 4px; padding: 0.25rem 0.7rem; }
+
+.insight-flow { display: flex; flex-direction: column; gap: 0.8vw; max-width: 55rem; }
+.insight-step { display: grid; grid-template-columns: 7rem 1fr; gap: 1rem; align-items: start; }
+.insight-tag { font-size: var(--xs); font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; padding: 0.25rem 0.6rem; border-radius: 4px; text-align: center; margin-top: 0.2rem; }
+.tag-raw { background: rgba(122,132,168,0.15); color: var(--mist); }
+.tag-cross { background: rgba(107,142,240,0.12); color: var(--sky); }
+.tag-insight { background: rgba(47,77,170,0.12); color: var(--brand); }
+.insight-text { font-size: var(--sm); color: var(--ink); line-height: 1.65; }
+.insight-text strong { font-weight: 700; color: var(--brand); }
+.insight-divider { height: 1px; background: rgba(47,77,170,0.15); margin: 0.2vw 0 0.2vw 8rem; }
+
+.takeaway-grid { display: flex; flex-direction: column; gap: 1.2vw; max-width: 52rem; }
+.takeaway-item { display: flex; gap: 1rem; align-items: flex-start; transition: transform 0.2s ease; }
+.takeaway-item:hover { transform: translateX(5px); }
+.takeaway-num { font-size: var(--xl); font-weight: 900; color: var(--brand); line-height: 1; min-width: 2rem; }
+.takeaway-text { font-size: var(--base); color: var(--ink); line-height: 1.6; }
+.takeaway-text strong { color: var(--brand); }
+
+.ref-tag { font-size: var(--xs); font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--warn); border: 1px solid rgba(232,93,58,0.4); border-radius: 100px; padding: 0.2rem 0.85rem; align-self: flex-start; }
+
+.goal-line { font-size: var(--lg); font-weight: 700; color: var(--brand); line-height: 1.35; max-width: 100%; text-wrap: balance; }
+.goal-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.4vw; max-width: 60rem; }
+.goal-item { border-top: 2px solid rgba(47,77,170,0.3); padding-top: 0.7vw; }
+.goal-k { font-size: var(--xs); font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--mist); margin-bottom: 0.35vw; }
+.goal-v { font-size: var(--sm); color: var(--ink); line-height: 1.5; }
+
+.prompt-box { font-family: var(--mono); font-size: clamp(0.6rem, 0.92vw, 0.95rem); line-height: 1.6; color: var(--ink); background: rgba(13,21,32,0.05); border-left: 3px solid var(--brand); border-radius: 0 6px 6px 0; padding: 1vw 1.4vw; white-space: pre-wrap; max-width: 66rem; overflow-x: auto; }
+.prompt-box .cmd { color: var(--brand); font-weight: 700; }
+.prompt-caption { font-size: var(--xs); color: var(--mist); margin-top: 0.5vw; max-width: 60ch; line-height: 1.5; }
+
+.qa-list { display: flex; flex-direction: column; gap: 0.85vw; max-width: 62rem; counter-reset: qa; }
+.qa-item { display: grid; grid-template-columns: 1.7rem 1fr; gap: 0.9rem; align-items: start; }
+.qa-item::before { counter-increment: qa; content: counter(qa); font-size: var(--lg); font-weight: 900; color: var(--brand); line-height: 1.1; }
+.qa-q { font-size: var(--sm); color: var(--ink); line-height: 1.5; font-weight: 700; }
+.qa-why { font-size: var(--xs); color: var(--mist); line-height: 1.45; margin-top: 0.15rem; }
+
+#nav { position: absolute; bottom: 2.5%; right: 2%; z-index: 100; display: flex; align-items: center; gap: 0.3rem; background: rgba(13,21,32,0.72); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.1); border-radius: 100px; padding: 0.3rem 0.6rem; }
+#counter { font-family: var(--ff); font-size: 0.7rem; color: var(--mist); min-width: 3rem; text-align: center; font-variant-numeric: tabular-nums; border: 1px solid rgba(255,255,255,0.18); border-radius: 100px; padding: 0.18rem 0.6rem; cursor: pointer; transition: background 0.15s, border-color 0.15s, color 0.15s; user-select: none; }
+#counter:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.32); color: var(--chalk); }
+.nav-btn { background: none; border: none; cursor: pointer; color: var(--chalk); font-size: 0.9rem; width: 1.6rem; height: 1.6rem; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: background 0.15s, opacity 0.15s; opacity: 0.65; }
+.nav-btn:hover { background: rgba(255,255,255,0.12); opacity: 1; }
+.nav-btn:disabled { opacity: 0.18; cursor: default; }
+#fullscreenBtn { background: none; border: none; cursor: pointer; color: var(--mist); font-size: 0.78rem; width: 1.6rem; height: 1.6rem; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: background 0.15s, color 0.15s; margin-left: 0.15rem; }
+#fullscreenBtn:hover { background: rgba(255,255,255,0.12); color: var(--chalk); }
+
+/* ── Staged reveal para slides con etapas ─────────────────────── */
+
+/* Slides 8 y 19: descendientes en grid, data-stage funciona directo */
+.slide[data-i="2"].active > *,
+.slide[data-i="36"].active > * { animation: none; opacity: 1; transform: none; }
+.slide[data-i="2"] [data-stage],
+.slide[data-i="36"] [data-stage] { opacity: 0; transform: translateY(10px); }
+.slide[data-i="2"].active [data-stage],
+.slide[data-i="36"].active [data-stage] {
+  animation: fadeUp 0.52s cubic-bezier(0.2, 0, 0, 1) both;
+  animation-delay: calc(var(--stage) * 280ms + 80ms);
+}
+
+/* Slide 5: hijos directos → nth-child explícito */
+.slide[data-i="10"].active > :nth-child(1) { animation: fadeUp 0.52s cubic-bezier(0.2,0,0,1) 80ms both; }
+.slide[data-i="10"].active > :nth-child(2) { animation: fadeUp 0.52s cubic-bezier(0.2,0,0,1) 400ms both; }
+.slide[data-i="10"].active > :nth-child(3) { animation: fadeUp 0.52s cubic-bezier(0.2,0,0,1) 720ms both; }
+#picker-wrap { position: relative; }
+#slide-picker { position: absolute; bottom: calc(100% + 0.9rem); right: 0; background: rgba(11,18,30,0.97); backdrop-filter: blur(14px); border: 1px solid rgba(255,255,255,0.11); border-radius: 10px; overflow-y: auto; max-height: 38vh; min-width: 15rem; display: none; box-shadow: 0 10px 36px rgba(0,0,0,0.55); z-index: 300; }
+#slide-picker.open { display: block; }
+.picker-item { display: flex; align-items: center; gap: 0.65rem; padding: 0.42rem 0.75rem; cursor: pointer; transition: background 0.12s; border-bottom: 1px solid rgba(255,255,255,0.05); }
+.picker-item:last-child { border-bottom: none; }
+.picker-item:hover { background: rgba(255,255,255,0.07); }
+.picker-item.active-slide { background: rgba(107,142,240,0.16); }
+.picker-num { font-size: 0.62rem; color: var(--mist); min-width: 1.6rem; text-align: right; font-variant-numeric: tabular-nums; flex-shrink: 0; }
+.picker-label { font-size: 0.7rem; color: rgba(255,255,255,0.82); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 12rem; line-height: 1.3; }
+#progress { position: absolute; top: 0; left: 0; height: 2px; background: var(--brand); z-index: 100; transition: width 0.3s ease; }
+</style>
+
+<div id="stage">
+  <div id="progress" style="width:2%"></div>
+  <div id="overlay"></div>
+
+  <div class="slide slide--cover active" data-i="0">
+    <div class="cover-deco"></div>
+    <svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 50" style="position:absolute;top:calc(4% + 30px);right:3.5%;width:clamp(72px,7.5vw,108px);height:auto;"><path fill="white" d="M10.2,5.9h4.7v24.3c0,2.8,0.7,4.9,2.1,6.4c1.5,1.6,3.7,2.5,5.9,2.3c2.3,0.1,4.5-0.7,6.1-2.3c1.4-1.5,2.2-3.6,2.2-6.5c0.3-4.5-3.1-8.5-7.5-8.8c-0.4,0-0.8,0-1.2,0c-2.1-0.1-4.2,0.6-5.8,1.9v-4.6c1.9-1,4.1-1.6,6.3-1.6c3.5-0.1,6.8,1.2,9.2,3.6s3.6,5.6,3.6,9.6c0,4.2-1.3,7.5-3.8,9.7c-2.6,2.4-6.1,3.6-9.6,3.5c-3.4,0.2-6.6-1.2-9-3.6c-2.3-2.4-3.4-5.6-3.4-9.7V5.9z"/><path fill="white" d="M62.6,43h-9.1c-3.9,0-6.7-0.6-8.4-1.8c-1.4-0.8-2.4-2.1-2.9-3.6c-0.4-1.9-0.7-3.7-0.6-5.7V17.5h4.7v14.2c0,0.7,0,1.2,0.1,1.6c0.1,0.6,0.2,1.2,0.3,1.7c0.2,0.6,0.5,1.2,0.9,1.7c0.5,0.5,1,0.9,1.7,1.2c0.8,0.3,1.8,0.5,2.7,0.5h6V17.5h4.6L62.6,43z"/><path fill="white" d="M83.9,17.5h5.2l-6.4,11c4.3,1.2,6.5,4.7,6.5,10.6V43h-4.7v-3.9c0.1-2-0.7-4.1-2.1-5.5c-1.4-1.3-3.4-1.9-5.9-1.9c-0.8,0-1.7,0.1-2.5,0.2v11.1h-4.7V5.9H74v21.7c1.4-0.2,3-0.2,4.4,0L83.9,17.5z"/><path fill="white" d="M5.1,24.7c0,1.4-1.1,2.5-2.5,2.5S0,26.2,0,24.7c0-1.4,1.1-2.5,2.5-2.5S5.1,23.3,5.1,24.7z"/><path fill="white" d="M98,24.7c0,1.4-1.1,2.5-2.5,2.5c-1.4,0-2.5-1.1-2.5-2.5c0-1.4,1.1-2.5,2.5-2.5C96.9,22.2,98,23.3,98,24.7z"/></svg>
+    <h1 class="cover-title">El verdadero ROI de la IA es el criterio</h1>
+    <p class="cover-subtitle">Cuando la IA permite automatizar los procesos operativos, da espacio para que el pensamiento estratégico brille.</p>
+    <div class="cover-bar"></div>
+    <p class="cover-meta">Ila Hirnheimer • Head of Product Experience</p>
+    <p class="cover-meta">Dino Vicencio • Design Ops</p>
+    <p class="cover-meta">Buk · 2026</p>
+  </div>
+
+  <div class="slide slide--light" data-i="1" style="gap:0.8vw;padding:4% 7%;">
+    <h2 class="slide-title">Buk</h2>
+
+    <!-- Bloque Buk: card con borde que lo delimita como entidad -->
+    <div style="width:100%;background:white;border:1.5px solid rgba(47,77,170,0.18);border-radius:10px;padding:1.1vw 1.6vw;box-shadow:0 1px 10px rgba(47,77,170,0.07);">
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);width:100%;">
+        <div class="stat-card" style="border-left:none;text-align:center;"><div class="stat-num">5</div><div class="stat-label">países</div></div>
+        <div class="stat-card" style="border-left:none;text-align:center;"><div class="stat-num">+10.000</div><div class="stat-label">empresas clientes</div></div>
+        <div class="stat-card" style="border-left:none;text-align:center;"><div class="stat-num">~250.000</div><div class="stat-label">usuarios activos al día</div></div>
+      </div>
+    </div>
+
+    <!-- Conector full-width: Buk → Equipo Product Experience -->
+    <div style="width:100%;display:flex;align-items:center;gap:1vw;">
+      <div style="flex:1;height:1px;background:rgba(47,77,170,0.22);"></div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:0.12vw;">
+        <span style="font-size:0.72rem;color:var(--brand);line-height:1;">↓</span>
+        <span style="font-size:var(--xs);font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--brand);white-space:nowrap;">Equipo Product Experience</span>
+        <span style="font-size:0.72rem;color:var(--brand);line-height:1;">↓</span>
+      </div>
+      <div style="flex:1;height:1px;background:rgba(47,77,170,0.22);"></div>
+    </div>
+
+    <!-- 3 pilares -->
+    <div style="width:100%;display:grid;grid-template-columns:repeat(3,1fr);gap:1.2vw;">
+      <div class="pain-block">
+        <div class="pain-tag" style="color:var(--brand);">Design System</div>
+        <div class="pain-text">Componentes, patrones y tokens que garantizan consistencia visual y de comportamiento en el producto.</div>
+      </div>
+      <div class="pain-block">
+        <div class="pain-tag" style="color:var(--brand);">Product Design</div>
+        <div class="pain-text">Discovery, propuesta de solución y validación junto a los equipos de producto en cada misión.</div>
+      </div>
+      <div class="pain-block">
+        <div class="pain-tag" style="color:var(--brand);">UX Writing</div>
+        <div class="pain-text">Voz, tono y criterio de escritura transversal para mantener estándares en los 50 equipos de producto.</div>
+      </div>
+    </div>
+
+    <!-- Design Ops: caja delgada, visualmente distinta al conector PE -->
+    <div style="width:100%;padding:0.4vw 1.2vw;border:1px dashed rgba(47,77,170,0.35);border-radius:6px;display:flex;align-items:center;justify-content:center;">
+      <span style="font-size:var(--xs);font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--brand);">Design Ops</span>
+    </div>
+  </div>
+
+  <div class="slide slide--dark" data-i="15">
+    <p class="statement">Más IA no es el objetivo.<br><em>Automatizar lo obvio.<br>Invertir en criterio.<br>Construir mejor producto.</em></p>
+  </div>
+
+  <div class="slide slide--light" data-i="6">
+    <h2 class="slide-title">Revisamos los procesos del equipo para entender el nivel de certidumbre y operatividad, y dirigir nuestros esfuerzos</h2>
+    <div class="compare-grid" style="margin-top:0.5vw;">
+      <div class="compare-col">
+        <div class="col-label muted">Más operativos</div>
+        <ul>
+          <li>Revisar copies simples</li>
+          <li>Encontrar componentes</li>
+          <li>Arreglar inconsistencias básicas</li>
+          <li>Sintetizar información</li>
+          <li>Responder consultas recurrentes</li>
+        </ul>
+      </div>
+      <div class="compare-col">
+        <div class="col-label">Más estratégicos</div>
+        <ul>
+          <li>Hablar con clientes</li>
+          <li>Descubrir problemas reales</li>
+          <li>Cuestionar soluciones</li>
+          <li>Explorar oportunidades</li>
+          <li>Construir visión y criterio de producto</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide slide--light" data-i="10" style="gap:1.2vw;padding:4.5% 6%;">
+    <h2 class="slide-title" data-stage style="--stage:0">Hemos generado herramientas <br>que nos permiten ser cada vez más estratégicos.</h2>
+
+    <!-- Timeline de etapas (grid de 5 columnas iguales para alinear con las cards) -->
+    <div data-stage style="--stage:1;width:100%;position:relative;margin-top:0.6vw;">
+      <div style="position:absolute;top:1.1vw;left:10%;right:10%;height:1.5px;background:rgba(47,77,170,0.2);z-index:0;"></div>
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);position:relative;z-index:1;">
+
+        <div style="display:flex;flex-direction:column;align-items:center;gap:0.4vw;">
+          <div style="width:2.2vw;height:2.2vw;min-width:1.5rem;min-height:1.5rem;border-radius:50%;background:var(--brand);display:flex;align-items:center;justify-content:center;font-size:var(--xs);font-weight:700;color:white;flex-shrink:0;">1</div>
+          <div style="text-align:center;">
+            <div style="font-size:var(--xs);font-weight:700;color:var(--brand);line-height:1.3;margin-bottom:0.15vw;">Definiciones pre kickoff</div>
+            <div style="font-size:var(--xs);color:var(--mist);line-height:1.35;">Definición estratégica (anual)</div>
+          </div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;align-items:center;gap:0.4vw;">
+          <div style="width:2.2vw;height:2.2vw;min-width:1.5rem;min-height:1.5rem;border-radius:50%;background:var(--brand);display:flex;align-items:center;justify-content:center;font-size:var(--xs);font-weight:700;color:white;flex-shrink:0;">2</div>
+          <div style="text-align:center;">
+            <div style="font-size:var(--xs);font-weight:700;color:var(--brand);line-height:1.3;margin-bottom:0.15vw;">Discovery</div>
+            <div style="font-size:var(--xs);color:var(--mist);line-height:1.35;">Definición del problema y scope</div>
+          </div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;align-items:center;gap:0.4vw;">
+          <div style="width:2.2vw;height:2.2vw;min-width:1.5rem;min-height:1.5rem;border-radius:50%;background:var(--brand);display:flex;align-items:center;justify-content:center;font-size:var(--xs);font-weight:700;color:white;flex-shrink:0;">3</div>
+          <div style="text-align:center;">
+            <div style="font-size:var(--xs);font-weight:700;color:var(--brand);line-height:1.3;margin-bottom:0.15vw;">Desarrollo de misión</div>
+            <div style="font-size:var(--xs);color:var(--mist);line-height:1.35;">Planificación, desarrollo y checkpoints</div>
+          </div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;align-items:center;gap:0.4vw;">
+          <div style="width:2.2vw;height:2.2vw;min-width:1.5rem;min-height:1.5rem;border-radius:50%;background:var(--brand);display:flex;align-items:center;justify-content:center;font-size:var(--xs);font-weight:700;color:white;flex-shrink:0;">4</div>
+          <div style="text-align:center;">
+            <div style="font-size:var(--xs);font-weight:700;color:var(--brand);line-height:1.3;margin-bottom:0.15vw;">Rollout y post-rollout</div>
+            <div style="font-size:var(--xs);color:var(--mist);line-height:1.35;">Validación y medición</div>
+          </div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;align-items:center;gap:0.4vw;">
+          <div style="width:2.2vw;height:2.2vw;min-width:1.5rem;min-height:1.5rem;border-radius:50%;background:rgba(107,142,240,0.12);border:1.5px solid var(--sky);display:flex;align-items:center;justify-content:center;font-size:var(--xs);font-weight:700;color:var(--sky);flex-shrink:0;">↺</div>
+          <div style="text-align:center;">
+            <div style="font-size:var(--xs);font-weight:700;color:var(--sky);line-height:1.3;margin-bottom:0.15vw;">Discovery Continuo</div>
+            <div style="font-size:var(--xs);color:var(--mist);line-height:1.35;">Ciclo permanente</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Cards posicionadas por etapa, con líneas verticales separadoras -->
+    <div data-stage style="--stage:2;width:100%;position:relative;margin-top:0.55vw;">
+      <div style="position:absolute;top:0;bottom:0;left:20%;width:1px;background:rgba(47,77,170,0.13);z-index:0;pointer-events:none;"></div>
+      <div style="position:absolute;top:0;bottom:0;left:40%;width:1px;background:rgba(47,77,170,0.13);z-index:0;pointer-events:none;"></div>
+      <div style="position:absolute;top:0;bottom:0;left:60%;width:1px;background:rgba(47,77,170,0.13);z-index:0;pointer-events:none;"></div>
+      <div style="position:absolute;top:0;bottom:0;left:80%;width:1px;background:rgba(47,77,170,0.13);z-index:0;pointer-events:none;"></div>
+
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);column-gap:0;row-gap:0.35vw;position:relative;z-index:1;">
+
+        <!-- Fila 1: Template def. (S1), Chatbot UXW (S2+S3), UDR (S4+S5) -->
+        <div style="grid-column:1/2;grid-row:1;padding:0.5vw 0.5vw 0.5vw 0.7vw;background:#eceff7;border-radius:6px;border-left:2px solid var(--brand);margin-right:0.2vw;">
+          <div style="font-size:0.64rem;font-weight:700;color:var(--brand);margin-bottom:0.1vw;">Template definición del problema</div>
+          <div style="font-size:var(--xs);color:var(--mist);line-height:1.35;">Estructura el problema, alcance y supuestos de una misión.</div>
+        </div>
+        <div style="grid-column:2/4;grid-row:1;padding:0.5vw 0.5vw 0.5vw 0.7vw;background:#eceff7;border-radius:6px;border-left:2px solid var(--brand);margin:0 0.2vw;">
+          <div style="font-size:0.64rem;font-weight:700;color:var(--brand);margin-bottom:0.1vw;">UXW + IA</div>
+          <div style="font-size:var(--xs);color:var(--mist);line-height:1.35;">Set de herramientas que integra documentación, lineamientos y un chatbot que valida en tiempo real el cumplimiento de los lineamientos de voz y tono.</div>
+        </div>
+        <div style="grid-column:4/6;grid-row:1;padding:0.5vw 0.5vw 0.5vw 0.7vw;background:#eceff7;border-radius:6px;border-left:2px solid var(--brand);margin-left:0.2vw;">
+          <div style="font-size:0.64rem;font-weight:700;color:var(--brand);margin-bottom:0.1vw;">User Discovery Report</div>
+          <div style="font-size:var(--xs);color:var(--mist);line-height:1.35;">Informe narrativo construido desde datos masivos, en horas.</div>
+        </div>
+
+        <!-- Fila 2: Skills de Entrevistas (S5) -->
+        <div style="grid-column:5/6;grid-row:2;padding:0.5vw 0.5vw 0.5vw 0.7vw;background:#eceff7;border-radius:6px;border-left:2px solid var(--brand);margin-left:0.2vw;">
+          <div style="font-size:0.64rem;font-weight:700;color:var(--brand);margin-bottom:0.1vw;">Skills de Entrevistas</div>
+          <div style="font-size:var(--xs);color:var(--mist);line-height:1.35;">Set de skills que cubre todo el ciclo de entrevistas: desde el reclutamiento y filtro, hasta la documentación y el análisis metodológico.</div>
+        </div>
+
+        <!-- Fila 2b: Template plan (S1), Asistente DS (S2+S3), UX Health (S5) -->
+        <div style="grid-column:1/2;grid-row:2;padding:0.5vw 0.5vw 0.5vw 0.7vw;background:#eceff7;border-radius:6px;border-left:2px solid var(--brand);margin-right:0.2vw;">
+          <div style="font-size:0.64rem;font-weight:700;color:var(--brand);margin-bottom:0.1vw;">Template plan de investigación</div>
+          <div style="font-size:var(--xs);color:var(--mist);line-height:1.35;">Planifica objetivos, métodos y tiempos de una investigación.</div>
+        </div>
+        <div style="grid-column:2/4;grid-row:2;padding:0.5vw 0.5vw 0.5vw 0.7vw;background:#eceff7;border-radius:6px;border-left:2px solid var(--brand);margin:0 0.2vw;">
+          <div style="font-size:0.64rem;font-weight:700;color:var(--brand);margin-bottom:0.1vw;">Asistente Design System</div>
+          <div style="font-size:var(--xs);color:var(--mist);line-height:1.35;">Agente experto en patrones de experiencia, interfaz, comportamiento y código para diseñar y construir UI con IA.</div>
+        </div>
+        <div style="grid-column:5/6;grid-row:3;padding:0.5vw 0.5vw 0.5vw 0.7vw;background:#eceff7;border-radius:6px;border-left:2px solid var(--brand);margin-left:0.2vw;">
+          <div style="font-size:0.64rem;font-weight:700;color:var(--brand);margin-bottom:0.1vw;">UX Health</div>
+          <div style="font-size:var(--xs);color:var(--mist);line-height:1.35;">Medir e impulsar la calidad de la experiencia del producto.</div>
+        </div>
+
+        <!-- Fila 3: Skills de Entrevistas (S2), Figma + GitHub (S3), Synthetic Users (S5) -->
+        <div style="grid-column:2/3;grid-row:3;padding:0.5vw 0.5vw 0.5vw 0.7vw;background:#eceff7;border-radius:6px;border-left:2px solid var(--brand);margin:0 0.2vw;">
+          <div style="font-size:0.64rem;font-weight:700;color:var(--brand);margin-bottom:0.1vw;">Skills de Entrevistas</div>
+          <div style="font-size:var(--xs);color:var(--mist);line-height:1.35;">Set de skills que cubre todo el ciclo de entrevistas: desde el reclutamiento y filtro, hasta la documentación y el análisis metodológico.</div>
+        </div>
+        <div style="grid-column:3/4;grid-row:3;padding:0.5vw 0.5vw 0.5vw 0.7vw;background:#eceff7;border-radius:6px;border-left:2px solid var(--brand);margin:0 0.2vw;">
+          <div style="font-size:0.64rem;font-weight:700;color:var(--brand);margin-bottom:0.1vw;">Figma + GitHub</div>
+          <div style="font-size:var(--xs);color:var(--mist);line-height:1.35;">Base de conocimiento que alimenta la metadata del Design System en Figma, permitiendo a la IA comprender y utilizar los componentes correctamente, reduciendo iteraciones en la creación de UI.</div>
+        </div>
+        <div style="grid-column:5/6;grid-row:4;padding:0.5vw 0.5vw 0.5vw 0.7vw;background:#eceff7;border-radius:6px;border-left:2px solid var(--brand);margin-left:0.2vw;">
+          <div style="font-size:0.64rem;font-weight:700;color:var(--brand);margin-bottom:0.1vw;">Synthetic Users</div>
+          <div style="font-size:var(--xs);color:var(--mist);line-height:1.35;">Valida hipótesis con usuarios sintéticos construidos desde datos reales.</div>
+        </div>
+
+        <!-- Fila 4: Synthetic Users (S2), Skill Arquitectura de información (S3) -->
+        <div style="grid-column:2/3;grid-row:4;padding:0.5vw 0.5vw 0.5vw 0.7vw;background:#eceff7;border-radius:6px;border-left:2px solid var(--brand);margin:0 0.2vw;">
+          <div style="font-size:0.64rem;font-weight:700;color:var(--brand);margin-bottom:0.1vw;">Synthetic Users</div>
+          <div style="font-size:var(--xs);color:var(--mist);line-height:1.35;">Valida hipótesis con usuarios sintéticos construidos desde datos reales.</div>
+        </div>
+        <div style="grid-column:3/4;grid-row:4;padding:0.5vw 0.5vw 0.5vw 0.7vw;background:#eceff7;border-radius:6px;border-left:2px solid var(--brand);margin:0 0.2vw;">
+          <div style="font-size:0.64rem;font-weight:700;color:var(--brand);margin-bottom:0.1vw;">Skill Arquitectura de información</div>
+          <div style="font-size:var(--xs);color:var(--mist);line-height:1.35;">Estructura la arquitectura de información de un flujo de producto.</div>
+        </div>
+
+        <!-- Fila 5: Documentación de producto (S3) -->
+        <div style="grid-column:3/4;grid-row:5;padding:0.5vw 0.5vw 0.5vw 0.7vw;background:#eceff7;border-radius:6px;border-left:2px solid var(--brand);margin:0 0.2vw;">
+          <div style="font-size:0.64rem;font-weight:700;color:var(--brand);margin-bottom:0.1vw;">Documentación de producto</div>
+          <div style="font-size:var(--xs);color:var(--mist);line-height:1.35;">Templates para consolidar insights en la toma de decisiones.</div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="slide slide--dark" data-i="11">
+    <p class="statement">Ahora, a lo que vinimos...<br><em>Caso 1</em></p>
+  </div>
+
+  <div class="slide slide--light" data-i="14">
+    <h2 class="slide-title">Problema: Contamos con 2 UX writers para 50 equipos de producto y buscamos mantener un estándar transversal</h2>
+    <div style="display:flex;flex-direction:column;gap:1vw;max-width:66rem;margin-top:0.5vw;">
+
+      <div style="display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:1.2vw;padding:0.9vw 1.2vw;background:rgba(47,77,170,0.05);border-radius:8px;">
+        <div>
+          <span style="display:inline-block;font-size:var(--xs);font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--mist);border:1px solid rgba(122,132,168,0.35);border-radius:20px;padding:0.15em 0.7em;margin-bottom:0.5vw;">Detener el sangrado</span>
+          <div style="font-size:var(--sm);color:var(--ink);">Todo lo nuevo debe seguir lineamientos</div>
+        </div>
+        <div style="font-size:var(--xl);color:var(--brand);font-weight:300;">→</div>
+        <div style="display:flex;flex-wrap:wrap;gap:0.4vw;">
+          <span class="pc-chip">Manual de UX Writing</span>
+          <span class="pc-chip">Canal Gchat dedicado</span>
+          <span class="pc-chip">Chatbot UX Writing</span>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:1.2vw;padding:0.9vw 1.2vw;background:rgba(47,77,170,0.05);border-radius:8px;">
+        <div>
+          <span style="display:inline-block;font-size:var(--xs);font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--mist);border:1px solid rgba(122,132,168,0.35);border-radius:20px;padding:0.15em 0.7em;margin-bottom:0.5vw;">deuda · 8 años</span>
+          <div style="font-size:var(--sm);color:var(--ink);">Mapeo masivo de mejoras pendientes</div>
+        </div>
+        <div style="font-size:var(--xl);color:var(--brand);font-weight:300;">→</div>
+        <div style="display:flex;flex-wrap:wrap;gap:0.4vw;">
+          <span class="pc-chip">Auditoria IA</span>
+          <span class="pc-chip">Score UX Writing</span>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:1.2vw;padding:0.9vw 1.2vw;background:rgba(47,77,170,0.05);border-radius:8px;">
+        <div>
+          <span style="display:inline-block;font-size:var(--xs);font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--mist);border:1px solid rgba(122,132,168,0.35);border-radius:20px;padding:0.15em 0.7em;margin-bottom:0.5vw;">profundidad</span>
+          <div style="font-size:var(--sm);color:var(--ink);">Journeys complejos que el sistema no resuelve solo</div>
+        </div>
+        <div style="font-size:var(--xl);color:var(--brand);font-weight:300;">→</div>
+        <div style="display:flex;flex-wrap:wrap;gap:0.4vw;">
+          <span class="pc-chip">Revisión con PDs y equipos</span>
+          <span class="pc-chip">Content Deep Dive</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="slide slide--light" data-i="2" style="gap:1.1vw;padding:4% 7%;">
+    <h2 class="slide-title" data-stage style="--stage:0">¿Cómo lo abordamos?<br>Ciclo de valor</h2>
+
+    <div style="width:100%;display:grid;grid-template-columns:1fr auto 1fr auto 1fr auto 1fr;align-items:stretch;">
+      <div data-stage style="--stage:1;background:white;border-radius:10px;padding:1.2vw 1.4vw;display:flex;flex-direction:column;gap:0.4vw;box-shadow:0 1px 8px rgba(47,77,170,0.07);">
+        <div style="font-size:var(--xl);font-weight:900;color:var(--brand);line-height:1;">01</div>
+        <div style="font-size:var(--sm);font-weight:700;color:var(--brand);">📦 Extracción</div>
+        <div style="font-size:var(--xs);font-weight:700;color:var(--mist);text-transform:uppercase;letter-spacing:0.08em;">Cantidad / Alcance</div>
+        <div style="font-size:var(--sm);color:var(--ink);line-height:1.55;margin-top:0.4vw;">Mapeo masivo y automatizado de todo el contenido de producto actualmente en uso.</div>
+      </div>
+      <div data-stage style="--stage:2;display:flex;align-items:center;padding:0 0.7vw;color:var(--brand);font-size:var(--lg);">→</div>
+      <div data-stage style="--stage:2;background:white;border-radius:10px;padding:1.2vw 1.4vw;display:flex;flex-direction:column;gap:0.4vw;box-shadow:0 1px 8px rgba(47,77,170,0.07);">
+        <div style="font-size:var(--xl);font-weight:900;color:var(--brand);line-height:1;">02</div>
+        <div style="font-size:var(--sm);font-weight:700;color:var(--brand);">📋 Rúbrica y análisis</div>
+        <div style="font-size:var(--xs);font-weight:700;color:var(--mist);text-transform:uppercase;letter-spacing:0.08em;">Asegurar calidad</div>
+        <div style="font-size:var(--sm);color:var(--ink);line-height:1.55;margin-top:0.4vw;"><strong>Control determinista:</strong> validación ortográfica y de idioma.<br><br><strong>Concisión:</strong> textos simples que optimizan la lectura digital.<br><strong>Voz y tono Buk:</strong> alineación con la identidad de "aliado experto".</div>
+      </div>
+      <div data-stage style="--stage:3;display:flex;align-items:center;padding:0 0.7vw;color:var(--brand);font-size:var(--lg);">→</div>
+      <div data-stage style="--stage:3;background:white;border-radius:10px;padding:1.2vw 1.4vw;display:flex;flex-direction:column;gap:0.4vw;box-shadow:0 1px 8px rgba(47,77,170,0.07);">
+        <div style="font-size:var(--xl);font-weight:900;color:var(--brand);line-height:1;">03</div>
+        <div style="font-size:var(--sm);font-weight:700;color:var(--brand);">📊 Exposición</div>
+        <div style="font-size:var(--xs);font-weight:700;color:var(--mist);text-transform:uppercase;letter-spacing:0.08em;">Democratización</div>
+        <div style="font-size:var(--sm);color:var(--ink);line-height:1.55;margin-top:0.4vw;">Visualización abierta en Looker para toda la compañía.<br><br>Establece el score UXW como un KPI clave de la experiencia.</div>
+      </div>
+      <div data-stage style="--stage:4;display:flex;align-items:center;padding:0 0.7vw;color:var(--brand);font-size:var(--lg);">→</div>
+      <div data-stage style="--stage:4;background:white;border-radius:10px;padding:1.2vw 1.4vw;display:flex;flex-direction:column;gap:0.4vw;box-shadow:0 1px 8px rgba(47,77,170,0.07);">
+        <div style="font-size:var(--xl);font-weight:900;color:var(--brand);line-height:1;">04</div>
+        <div style="font-size:var(--sm);font-weight:700;color:var(--brand);">💬 Acción y Bot UXW</div>
+        <div style="font-size:var(--xs);font-weight:700;color:var(--mist);text-transform:uppercase;letter-spacing:0.08em;">Corrección ágil</div>
+        <div style="font-size:var(--sm);color:var(--ink);line-height:1.55;margin-top:0.4vw;">Correcciones rápidas mediante el bot UXW con IA, facilitando la mejora descentralizada sin depender del equipo de diseño.</div>
+      </div>
+    </div>
+
+    <div data-stage style="--stage:5;width:100%;display:flex;align-items:center;gap:0.8vw;margin-top: 3vw;">
+      <div style="flex:1;height:1px;border-top:1.5px dashed rgba(47,77,170,0.25);"></div>
+      <span style="font-size:var(--xs);font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--brand);opacity:0.75;white-space:nowrap;">↺ el ciclo se repite con cada iteración del producto</span>
+      <div style="flex:1;height:1px;border-top:1.5px dashed rgba(47,77,170,0.25);"></div>
+    </div>
+  </div>
+
+
+<div class="slide slide--demo" data-i="13">
+    <div class="demo-ring"><div class="demo-ring-dot"></div></div>
+    <div class="demo-label">Demo 01</div>
+    <div class="demo-sub">UX Writing Score</div>
+  </div>
+
+  <div class="slide slide--light" data-i="20" data-skip="true" style="gap:1.2vw;padding:4% 7%;">
+    <p class="eyebrow-label" style="color:var(--brand);">Impacto estratégico UXW</p>
+    <h2 class="slide-title">¿Qué logramos?</h2>
+    <div style="width:100%;display:grid;grid-template-columns:repeat(3,1fr);gap:1.4vw;margin-top:0.3vw;">
+
+      <div style="background:white;border-radius:10px;padding:1.4vw 1.6vw;display:flex;flex-direction:column;gap:0.5vw;border-top:3px solid var(--sky);box-shadow:0 1px 8px rgba(47,77,170,0.07);">
+        <div style="font-size:var(--xl);font-weight:900;color:var(--brand);line-height:1;">01</div>
+        <div style="font-size:var(--base);font-weight:700;color:var(--ink);margin-top:0.2vw;">Menos soporte</div>
+        <div style="font-size:var(--xs);font-weight:700;color:var(--sky);font-style:italic;">Eficiencia operacional</div>
+        <div style="font-size:var(--sm);color:var(--ink);line-height:1.6;margin-top:0.4vw;">Reducción directa en la tasa de llamadas y chats en soporte (SAC) mediante flujos más intuitivos, ayuda contextual clara y mensajes de error accionables.</div>
+      </div>
+
+      <div style="background:white;border-radius:10px;padding:1.4vw 1.6vw;display:flex;flex-direction:column;gap:0.5vw;border-top:3px solid var(--sky);box-shadow:0 1px 8px rgba(47,77,170,0.07);">
+        <div style="font-size:var(--xl);font-weight:900;color:var(--brand);line-height:1;">02</div>
+        <div style="font-size:var(--base);font-weight:700;color:var(--ink);margin-top:0.2vw;">Tono más empático</div>
+        <div style="font-size:var(--xs);font-weight:700;color:var(--sky);font-style:italic;">Conexión humana</div>
+        <div style="font-size:var(--sm);color:var(--ink);line-height:1.6;margin-top:0.4vw;">Evolución de un contenido más técnico y transaccional a una comunicación más cálida, cercana y empática que reduce la carga cognitiva del usuario.</div>
+      </div>
+
+      <div style="background:white;border-radius:10px;padding:1.4vw 1.6vw;display:flex;flex-direction:column;gap:0.5vw;border-top:3px solid var(--sky);box-shadow:0 1px 8px rgba(47,77,170,0.07);">
+        <div style="font-size:var(--xl);font-weight:900;color:var(--brand);line-height:1;">03</div>
+        <div style="font-size:var(--base);font-weight:700;color:var(--ink);margin-top:0.2vw;">La voz Buk</div>
+        <div style="font-size:var(--xs);font-weight:700;color:var(--sky);font-style:italic;">Consistencia de marca</div>
+        <div style="font-size:var(--sm);color:var(--ink);line-height:1.6;margin-top:0.4vw;">Establecimiento de un relato transversal interno unificado. Una sola voz digital alineada con el manual de UX Writing en cada punto de contacto.</div>
+      </div>
+
+    </div>
+  </div>
+  
+   <div class="slide slide--dark" data-i="18">
+    <p class="statement">Ya estábamos usando IA, pero...<br><em>¿Cómo conectarla al conocimiento que ya teníamos?</em></p>
+  </div>
+  <div class="slide slide--dark" data-i="11">
+    <p class="statement">Caso 2<br><em>Automatizatizando la fricción alrededor del discovery</em></p>
+</div>
+  <div class="slide slide--light" data-i="21" style="justify-content:center;">
+    <h2 class="slide-title" style="margin-bottom:1.8vw;">Dos piezas. Una arquitectura.</h2>
+    <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:1.5vw;max-width:64rem;width:100%;align-items:stretch;">
+
+      <!-- Bloque izquierdo: Product Center -->
+      <div style="display:flex;flex-direction:column;gap:0.9vw;padding:1.4vw 1.6vw;background:rgba(122,132,168,0.08);border:1.5px solid rgba(122,132,168,0.25);border-radius:10px;">
+        <div>
+          <div style="font-size:var(--xs);font-weight:700;letter-spacing:0.13em;text-transform:uppercase;color:var(--mist);margin-bottom:0.35vw;">Fuente</div>
+          <div style="font-size:var(--lg);font-weight:700;color:var(--ink);line-height:1.2;margin-bottom:0.2vw;">Product Center</div>
+          <div style="font-size:var(--sm);color:var(--mist);font-style:italic;line-height:1.4;">El conocimiento estructurado</div>
+        </div>
+        <p style="font-size:var(--sm);color:var(--ink);line-height:1.6;margin:0;">Donde vive lo que sabemos del usuario. No es una carpeta; es un repositorio estructurado y consultable.</p>
+        <div style="display:flex;flex-wrap:wrap;gap:0.4vw;margin-top:auto;">
+          <span class="pc-chip">Conversaciones de SAC</span>
+          <span class="pc-chip">Entrevistas discovery</span>
+          <span class="pc-chip">Analítica de uso</span>
+          <span class="pc-chip">Artículos de ayuda</span>
+          <span class="pc-chip">Clarity</span>
+        </div>
+      </div>
+
+      <!-- Conector central -->
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.4vw;padding:0 0.5vw;">
+        <div style="width:1px;flex:1;background:linear-gradient(to bottom, transparent, rgba(47,77,170,0.3), rgba(47,77,170,0.3), transparent);"></div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:0.15vw;">
+          <span style="font-size:0.85rem;color:var(--brand);line-height:1;">↑</span>
+          <span style="font-size:var(--xs);font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--brand);white-space:nowrap;writing-mode:vertical-rl;text-orientation:mixed;transform:rotate(180deg);padding:0.4vw 0;">conectados</span>
+          <span style="font-size:0.85rem;color:var(--brand);line-height:1;">↑</span>
+        </div>
+        <div style="width:1px;flex:1;background:linear-gradient(to bottom, transparent, rgba(47,77,170,0.3), rgba(47,77,170,0.3), transparent);"></div>
+      </div>
+
+      <!-- Bloque derecho: Skills -->
+      <div style="display:flex;flex-direction:column;gap:0.9vw;padding:1.4vw 1.6vw;background:rgba(47,77,170,0.07);border:1.5px solid rgba(47,77,170,0.3);border-radius:10px;">
+        <div>
+          <div style="font-size:var(--xs);font-weight:700;letter-spacing:0.13em;text-transform:uppercase;color:var(--brand);margin-bottom:0.35vw;">Motor</div>
+          <div style="font-size:var(--lg);font-weight:700;color:var(--ink);line-height:1.2;margin-bottom:0.2vw;">Skills de IA</div>
+          <div style="font-size:var(--sm);color:var(--brand);font-style:italic;line-height:1.4;">El motor que lo acciona</div>
+        </div>
+        <p style="font-size:var(--sm);color:var(--ink);line-height:1.6;margin:0;">Contexto de sesión que conecta la IA con esas fuentes. No inventa; consulta, cruza y entrega.</p>
+        <div style="display:flex;flex-wrap:wrap;gap:0.4vw;margin-top:auto;">
+          <span class="pc-chip" style="border-color:rgba(47,77,170,0.3);color:var(--brand);">Synthetic Users</span>
+          <span class="pc-chip" style="border-color:rgba(47,77,170,0.3);color:var(--brand);">User Discovery Report</span>
+          <span class="pc-chip" style="border-color:rgba(47,77,170,0.3);color:var(--brand);">UX Writing Score</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+
+  <div class="slide slide--light" data-i="8">
+    <h2 class="slide-title">Si la herramienta aleja al diseñador del cliente, para nosotros fracasó.</h2>
+    <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:2vw;align-items:center;max-width:58rem;margin-top:1vw;">
+      <div>
+        <div style="font-size:var(--xs);font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--mist);margin-bottom:0.8vw;">Fuentes</div>
+        <div style="display:flex;flex-direction:column;gap:0.5vw;">
+          <span class="pc-chip">Conversaciones de soporte</span>
+          <span class="pc-chip">Uso de producto</span>
+          <span class="pc-chip">Heatmaps</span>
+          <span class="pc-chip">Entrevistas</span>
+        </div>
+      </div>
+      <div style="font-size:var(--xl);color:var(--brand);font-weight:300;flex-shrink:0;">→</div>
+      <div>
+        <div style="font-size:var(--xs);font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--brand);margin-bottom:0.8vw;">Contexto consultable</div>
+        <div class="slide-body">
+          <p>Acceso rápido, cruzado y sin fricción al conocimiento que antes requería semanas de lectura manual.</p>
+        </div>
+      </div>
+    </div>
+    <p class="bridge-note" style="max-width:62ch;">La meta es llegar antes a mejores preguntas e insights, no reemplazar la exposición al problema.</p>
+  </div>
+
+  <div class="slide slide--light" data-i="35" style="gap:1.6vw;padding:5% 7%;justify-content:center;">
+    <h2 class="slide-title">Para esto, les hablaremos de 2 herramientas</h2>
+    <div style="width:100%;display:grid;grid-template-columns:1fr 1fr;gap:1.6vw;margin-top:0.5vw;">
+
+      <div style="background:rgba(47,77,170,0.07);border-radius:12px;padding:2vw 2.4vw;display:flex;flex-direction:column;justify-content:space-between;gap:1.2vw;border:1.5px solid rgba(47,77,170,0.15);min-height:14vw;">
+        <div style="font-size:var(--xs);font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--brand);opacity:0.7;">Herramienta 1</div>
+        <div>
+          <div style="font-size:var(--lg);font-weight:900;color:var(--ink);letter-spacing:-0.02em;line-height:1.15;margin-bottom:0.4vw;">Synthetic Users</div>
+          <div style="font-size:var(--sm);color:var(--mist);line-height:1.5;">Una conversación con un usuario construido desde los datos reales de tu organización.</div>
+        </div>
+      </div>
+
+      <div style="background:rgba(47,77,170,0.07);border-radius:12px;padding:2vw 2.4vw;display:flex;flex-direction:column;justify-content:space-between;gap:1.2vw;border:1.5px solid rgba(47,77,170,0.15);min-height:14vw;">
+        <div style="font-size:var(--xs);font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--brand);opacity:0.7;">Herramienta 2</div>
+        <div>
+          <div style="font-size:var(--lg);font-weight:900;color:var(--ink);letter-spacing:-0.02em;line-height:1.15;margin-bottom:0.4vw;">User Discovery Report</div>
+          <div style="font-size:var(--sm);color:var(--mist);line-height:1.5;">Un informe narrativo construido desde datos masivos. En horas, no semanas.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+<div class="slide slide--brand" data-i="31">
+    <div class="block-rule"></div>
+    <h2 class="block-title">Synthetic Users</h2>
+    <p class="block-sub">Una conversación con los datos reales de tu organización</p>
+  </div>
+
+  
+
+  <div class="slide slide--light" data-i="32">
+    <span class="ref-tag" style="border-color:rgba(47,77,170,0.35);color:var(--brand);">Dolor</span>
+    <h2 class="slide-title">No solo es agendar entrevistas,<br> es llegar bien preparado.</h2>
+    <div class="slide-body">
+      <div class="row"><span class="icon">·</span><span>Conseguir la entrevista es <strong>"super costoso"</strong>.</span></div>
+      <div class="row"><span class="icon">·</span><span>Cuando por fin ocurre, llegas con hipótesis que <strong>no pudiste tensar antes</strong>.</span></div>
+      <div class="row"><span class="icon">·</span><span>Una pregunta mal formulada <strong>quema la sesión</strong>.</span></div>
+      <br>
+    </div>
+  </div>
+
+  <div class="slide slide--light" data-i="33">
+    <span class="ref-tag" style="border-color:rgba(47,77,170,0.35);color:var(--brand);">Para qué existe</span>
+    <p class="goal-line">Conversas con un usuario sintético, construido desde datos reales de tu organización, no de internet, para tensar hipótesis y pre-testear tus preguntas.</p>
+    <div class="goal-grid">
+      <div class="goal-item"><div class="goal-k">Qué recibe</div><div class="goal-v">Un rol, un módulo y un país</div></div>
+      <div class="goal-item"><div class="goal-k">Qué entrega</div><div class="goal-v">Una conversación en primera persona, con el vocabulario de ese país</div></div>
+      <div class="goal-item"><div class="goal-k">Qué no es</div><div class="goal-v">No reemplaza al usuario real. No genera informes.</div></div>
+    </div>
+  </div>
+
+  <div class="slide slide--dark" data-i="34">
+    <p class="statement">Al usuario sintético no lo inventamos,<br>lo construimos desde 6 fuentes.<br><em>No es un usuario genérico de internet.</em></p>
+  </div>
+
+
+  <div class="slide slide--dark" style="flex-direction:column;gap:1.4vw;padding:4% 5.5%;align-items:flex-start;justify-content:center;text-align:left;" data-i="36">
+    <div class="cog-header" data-stage style="--stage:0">
+      <p class="cog-eyebrow">¿Cómo lograr que responda como un usuario real? Modelo cognitivo Tourangeau, Rips y Rasinski</p>
+      <p class="cog-title">El usuario sintético articula <em>cómo interpreta</em> la pregunta</p>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1.4vw;width:100%;">
+
+      <div data-stage style="--stage:1;border-top:2px solid rgba(107,142,240,0.4);padding-top:1vw;display:flex;flex-direction:column;gap:0.45vw;">
+        <div class="cog-num">Etapa 1</div>
+        <div class="cog-name">Comprensión</div>
+        <div style="height:1px;background:rgba(255,255,255,0.1);margin:0.3vw 0;"></div>
+        <div class="cog-desc">Infiere qué se le está preguntando desde su rol e identidad, contexto ambiental y enriquecimiento narrativo.</div>
+        <div style="margin-top:0.5vw;">
+          <div style="font-size:var(--xs);font-weight:700;color:var(--sky);margin-bottom:0.25vw;">Fuentes</div>
+          <div class="cog-desc">📋 Arquetipos y User Personas<br>📊 Data analítica, dispositivo, módulo, horarios, etc.</div>
+        </div>
+      </div>
+
+      <div data-stage style="--stage:2;border-top:2px solid rgba(107,142,240,0.4);padding-top:1vw;display:flex;flex-direction:column;gap:0.45vw;">
+        <div class="cog-num">Etapa 2</div>
+        <div class="cog-name">Recuperación</div>
+        <div style="height:1px;background:rgba(255,255,255,0.1);margin:0.3vw 0;"></div>
+        <div class="cog-desc">Busca en su memoria episódica dolores, deseos y expectativas.</div>
+        <div style="margin-top:0.5vw;">
+          <div style="font-size:var(--xs);font-weight:700;color:var(--sky);margin-bottom:0.25vw;">Fuentes</div>
+          <div class="cog-desc">💬 Chats con SAC<br>🎙️ Entrevistas discovery<br>📹 Data de comportamiento (Clarity)</div>
+        </div>
+      </div>
+
+      <div data-stage style="--stage:3;border-top:2px solid rgba(107,142,240,0.4);padding-top:1vw;display:flex;flex-direction:column;gap:0.45vw;">
+        <div class="cog-num">Etapa 3</div>
+        <div class="cog-name">Juicio</div>
+        <div style="height:1px;background:rgba(255,255,255,0.1);margin:0.3vw 0;"></div>
+        <div class="cog-desc">Contrasta lo que recuerda con el "deber ser".</div>
+        <div style="margin-top:0.5vw;">
+          <div style="font-size:var(--xs);font-weight:700;color:var(--sky);margin-bottom:0.25vw;">Fuentes</div>
+          <div class="cog-desc">📖 Artículos de ayuda<br>💬 Respuestas de SAC</div>
+        </div>
+      </div>
+
+      <div data-stage style="--stage:4;border-top:2px solid rgba(107,142,240,0.4);padding-top:1vw;display:flex;flex-direction:column;gap:0.45vw;">
+        <div class="cog-num">Etapa 4</div>
+        <div class="cog-name">Respuesta</div>
+        <div style="height:1px;background:rgba(255,255,255,0.1);margin:0.3vw 0;"></div>
+        <div class="cog-desc">Responde basado en la construcción de un perfil psico-social, con matices, pesos y prioridad ante deseabilidad y procesos clave mapeados, alineado a lo que conoce y no conoce.</div>
+      </div>
+
+    </div>
+  </div>
+
+
+  <div class="slide slide--demo" data-i="38">
+    <div class="demo-ring"><div class="demo-ring-dot"></div></div>
+    <div class="demo-label">Demo en vivo</div>
+    <div class="demo-sub">Synthetic Users</div>
+  </div>
+
+  <div class="slide slide--dark" data-i="39">
+    <p class="statement">Llegamos a las entrevistas<br>con <em>mejores preguntas</em>.<br>Y con menos suposiciones.</p>
+  </div>  
+  
+  <div class="slide slide--brand" data-i="22">
+    <div class="block-rule"></div>
+    <h2 class="block-title">User Discovery Report</h2>
+    <p class="block-sub">Una investigación narrativa construida desde las fuentes</p>
+  </div>
+
+  <div class="slide slide--light" data-i="23">
+    <span class="ref-tag" style="border-color:rgba(47,77,170,0.35);color:var(--brand);">Dolor</span>
+    <h2 class="slide-title">Un research con cada misión, por cada flujo. Semanas de trabajo.</h2>
+    <div class="slide-body">
+      <div class="row"><span class="icon">·</span><span>Leer <strong>cientos de conversaciones de soporte</strong>, una por una, y descartar las que están mal clasificadas.</span></div>
+      <div class="row"><span class="icon">·</span><span>Revisar el comportamiento real en una herramienta poco intuitiva, sesión por sesión.</span></div>
+      <div class="row"><span class="icon">·</span><span>Pedir los datos de uso a otro equipo, o pelear con una curva de aprendizaje bien empinada.</span></div>
+      <div class="row"><span class="icon">·</span><span>Cruzar todo a mano y redactar el informe.</span></div>
+      <br>
+      <p><strong>Semanas de trabajo. Y el resultado dependía de quién lo hiciera y de cuánto tiempo tuviera.</strong></p>
+    </div>
+  </div>
+
+  <div class="slide slide--dark" data-i="24">
+    <p class="statement">La misma pregunta,<br>designers distintos,<br><em>análisis distintos.</em></p>
+    <p class="sub">No por la calidad del designer, porque cada quien leía fuentes distintas, en distinto orden, con distinto tiempo, en un mar de datos.</p>
+  </div>
+
+  <div class="slide slide--light" data-i="25">
+    <span class="ref-tag" style="border-color:rgba(47,77,170,0.35);color:var(--brand);">Para qué existe</span>
+    <p class="goal-line">Una lectura honesta de qué le pasa al usuario, construida desde datos reales, representativos y masivos. En horas, no semanas.</p>
+    <div class="goal-grid">
+      <div class="goal-item"><div class="goal-k">Qué recibe</div><div class="goal-v">Módulo · país · período · el foco de lo que quieres entender</div></div>
+      <div class="goal-item"><div class="goal-k">Qué entrega</div><div class="goal-v">Un informe narrativo: síntesis del módulo, hallazgos triangulados entre fuentes y lo que los datos no alcanzaron a responder</div></div>
+      <div class="goal-item"><div class="goal-k">Qué garantiza</div><div class="goal-v">Representatividad estadística (al abarcar más datos), evidencia que cita su fuente (trazabilidad) y análisis consistente (se basa en los mismos datos)</div></div>
+    </div>
+  </div>
+
+
+  <div class="slide slide--demo" data-i="29">
+    <div class="demo-ring"><div class="demo-ring-dot"></div></div>
+    <div class="demo-label">Demo en vivo</div>
+    <div class="demo-sub">User Discovery Report</div>
+  </div>
+
+  <div class="slide slide--light" data-i="27">
+    <span class="ref-tag" style="border-color:rgba(47,77,170,0.35);color:var(--brand);">¿Qué logramos?</span>
+    <h2 class="slide-title">Pasar de un número como titular, al entendimiento del problema con evidencia.</h2>
+    <div class="insight-flow" style="margin-top:5vw;">
+      <div class="insight-step"><span class="insight-tag tag-raw">Dato crudo</span><p class="insight-text">Cientos o miles de señales simultáneas: conversaciones de soporte, eventos de analítica, clics de comportamiento, transcripciones de entrevistas. Volumen imposible de procesar manualmente.</p></div>
+      <div class="insight-divider"></div>
+      <div class="insight-step"><span class="insight-tag tag-cross">Cruce</span><p class="insight-text">La IA identifica patrones que se repiten en múltiples fuentes para el mismo módulo y período. Una queja en soporte que coincide con fricción en Clarity y una caída en analítica: eso es señal real.</p></div>
+      <div class="insight-divider"></div>
+      <div class="insight-step"><span class="insight-tag tag-insight">Insight</span><p class="insight-text">Cómo el usuario entiende la tarea versus cómo el sistema la resuelve. Causa documentada, efecto medido, fuente citada.</p></div>
+    </div>
+  </div>
+
+ 
+  <div class="slide slide--dark" data-i="40">
+    <p class="statement">El equipo lo midió.<br>Más IA integrada al flujo real:<br><em>más autonomía,<br>menos fricción.</em></p>
+  </div>
+
+  <div class="slide slide--light" data-i="17" style="gap:0.8vw;padding:3.5% 6%;">
+    <span class="ref-tag">Check interno de productividad</span>
+    <h2 class="slide-title">Lo que cambió para el equipo que ya integró IA</h2>
+
+    <!-- Two line charts -->
+    <div style="width:100%;display:grid;grid-template-columns:1fr 1fr;gap:1.6vw;margin-top:0.2vw;">
+
+      <!-- Chart 1: DS -->
+      <div>
+        <p style="font-size:var(--xs);font-weight:600;color:var(--ink);text-align:center;margin-bottom:0.2vw;">Autonomía<span style="color:var(--mist);font-weight:400;">, n=15</span></p>
+        <svg viewBox="0 0 300 175" style="width:100%;height:auto;display:block;overflow:visible;" xmlns="http://www.w3.org/2000/svg">
+          <!-- grid -->
+          <line x1="35" y1="12" x2="288" y2="12" stroke="#e8e9f0" stroke-width="0.8"/>
+          <line x1="35" y1="43" x2="288" y2="43" stroke="#e8e9f0" stroke-width="0.8"/>
+          <line x1="35" y1="74" x2="288" y2="74" stroke="#e8e9f0" stroke-width="0.8"/>
+          <line x1="35" y1="104" x2="288" y2="104" stroke="#e8e9f0" stroke-width="0.8"/>
+          <line x1="35" y1="135" x2="288" y2="135" stroke="#c8cad8" stroke-width="1"/>
+          <!-- y labels -->
+          <text x="30" y="15"  font-size="8" fill="#7a84a8" text-anchor="end" font-family="system-ui,sans-serif">5</text>
+          <text x="30" y="46"  font-size="8" fill="#7a84a8" text-anchor="end" font-family="system-ui,sans-serif">4</text>
+          <text x="30" y="77"  font-size="8" fill="#7a84a8" text-anchor="end" font-family="system-ui,sans-serif">3</text>
+          <text x="30" y="107" font-size="8" fill="#7a84a8" text-anchor="end" font-family="system-ui,sans-serif">2</text>
+          <text x="30" y="138" font-size="8" fill="#7a84a8" text-anchor="end" font-family="system-ui,sans-serif">1</text>
+          <!-- x labels -->
+          <text x="50"  y="150" font-size="8" fill="#7a84a8" text-anchor="middle" font-family="system-ui,sans-serif">&lt;6m</text>
+          <text x="136" y="150" font-size="8" fill="#7a84a8" text-anchor="middle" font-family="system-ui,sans-serif">6–12m</text>
+          <text x="222" y="150" font-size="8" fill="#7a84a8" text-anchor="middle" font-family="system-ui,sans-serif">12–24m</text>
+          <text x="288" y="150" font-size="8" fill="#7a84a8" text-anchor="middle" font-family="system-ui,sans-serif">&gt;24m</text>
+          <!-- Orange dashed: 1.7, 1.0, 3.5 — y=114, 135, 58 -->
+          <polyline points="50,114 136,135 222,58" fill="none" stroke="#e8832a" stroke-width="1.8" stroke-dasharray="5,3"/>
+          <circle cx="50"  cy="114" r="2.8" fill="#e8832a"/>
+          <circle cx="136" cy="135" r="2.8" fill="#e8832a"/>
+          <circle cx="222" cy="58"  r="2.8" fill="#e8832a"/>
+          <text x="44"  y="122" font-size="8.5" fill="#e8832a" text-anchor="end"    font-weight="700" font-family="system-ui,sans-serif">1.7</text>
+          <text x="136" y="130" font-size="8.5" fill="#e8832a" text-anchor="middle" font-weight="700" font-family="system-ui,sans-serif">1.0</text>
+          <text x="222" y="52"  font-size="8.5" fill="#e8832a" text-anchor="middle" font-weight="700" font-family="system-ui,sans-serif">3.5</text>
+          <!-- Blue: 3.0, 2.0, 3.0, 4.0 — y=74, 104, 74, 43 -->
+          <polyline points="50,74 136,104 222,74 288,43" fill="none" stroke="#2f4daa" stroke-width="2.2"/>
+          <circle cx="50"  cy="74"  r="3.2" fill="#2f4daa"/>
+          <circle cx="136" cy="104" r="3.2" fill="#2f4daa"/>
+          <circle cx="222" cy="74"  r="3.2" fill="#2f4daa"/>
+          <circle cx="288" cy="43"  r="3.2" fill="#2f4daa"/>
+          <text x="50"  y="68"  font-size="8.5" fill="#2f4daa" text-anchor="middle" font-weight="700" font-family="system-ui,sans-serif">3.0</text>
+          <text x="136" y="98"  font-size="8.5" fill="#2f4daa" text-anchor="middle" font-weight="700" font-family="system-ui,sans-serif">2.0</text>
+          <text x="222" y="68"  font-size="8.5" fill="#2f4daa" text-anchor="middle" font-weight="700" font-family="system-ui,sans-serif">3.0</text>
+          <text x="288" y="37"  font-size="8.5" fill="#2f4daa" text-anchor="middle" font-weight="700" font-family="system-ui,sans-serif">4.0</text>
+          <!-- Gap bracket: blue y=74, orange y=114 at x=50 -->
+          <line x1="60" y1="74"  x2="60" y2="114" stroke="#7a84a8" stroke-width="0.8" stroke-dasharray="2,2"/>
+          <line x1="57" y1="74"  x2="63" y2="74"  stroke="#7a84a8" stroke-width="0.8"/>
+          <line x1="57" y1="114" x2="63" y2="114" stroke="#7a84a8" stroke-width="0.8"/>
+          <text x="64" y="97" font-size="7.5" fill="#7a84a8" font-family="system-ui,sans-serif">1.3 pts</text>
+          <!-- Legend -->
+          <line x1="35" y1="165" x2="55" y2="165" stroke="#2f4daa" stroke-width="2"/>
+          <circle cx="45" cy="165" r="2.5" fill="#2f4daa"/>
+          <text x="58" y="168" font-size="6.5" fill="#1e2432" font-family="system-ui,sans-serif">Con IA integrada</text>
+          <line x1="148" y1="165" x2="168" y2="165" stroke="#e8832a" stroke-width="1.8" stroke-dasharray="4,2"/>
+          <text x="171" y="168" font-size="6.5" fill="#1e2432" font-family="system-ui,sans-serif">Sin IA (parcial/puntual)</text>
+        </svg>
+      </div>
+
+      <!-- Chart 2: Productividad percibida -->
+      <div>
+        <p style="font-size:var(--xs);font-weight:600;color:var(--ink);text-align:center;margin-bottom:0.2vw;">Productividad percibida <span style="color:var(--mist);font-weight:400;">, por antigüedad (1–5)</span></p>
+        <svg viewBox="0 0 330 175" style="width:100%;height:auto;display:block;overflow:visible;" xmlns="http://www.w3.org/2000/svg">
+          <!-- grid -->
+          <line x1="35" y1="12" x2="288" y2="12" stroke="#e8e9f0" stroke-width="0.8"/>
+          <line x1="35" y1="43" x2="288" y2="43" stroke="#e8e9f0" stroke-width="0.8"/>
+          <line x1="35" y1="74" x2="288" y2="74" stroke="#e8e9f0" stroke-width="0.8"/>
+          <line x1="35" y1="104" x2="288" y2="104" stroke="#e8e9f0" stroke-width="0.8"/>
+          <line x1="35" y1="135" x2="288" y2="135" stroke="#c8cad8" stroke-width="1"/>
+          <!-- y labels -->
+          <text x="30" y="15"  font-size="8" fill="#7a84a8" text-anchor="end" font-family="system-ui,sans-serif">5</text>
+          <text x="30" y="46"  font-size="8" fill="#7a84a8" text-anchor="end" font-family="system-ui,sans-serif">4</text>
+          <text x="30" y="77"  font-size="8" fill="#7a84a8" text-anchor="end" font-family="system-ui,sans-serif">3</text>
+          <text x="30" y="107" font-size="8" fill="#7a84a8" text-anchor="end" font-family="system-ui,sans-serif">2</text>
+          <text x="30" y="138" font-size="8" fill="#7a84a8" text-anchor="end" font-family="system-ui,sans-serif">1</text>
+          <!-- x labels -->
+          <text x="50"  y="150" font-size="8" fill="#7a84a8" text-anchor="middle" font-family="system-ui,sans-serif">&lt;6m</text>
+          <text x="136" y="150" font-size="8" fill="#7a84a8" text-anchor="middle" font-family="system-ui,sans-serif">6–12m</text>
+          <text x="222" y="150" font-size="8" fill="#7a84a8" text-anchor="middle" font-family="system-ui,sans-serif">12–24m</text>
+          <text x="288" y="150" font-size="8" fill="#7a84a8" text-anchor="middle" font-family="system-ui,sans-serif">+24m</text>
+          <!-- Orange solid (Sin IA integrada): 3.4, 3.0, 3.0, 3.0 — y=61, 74, 74, 74 -->
+          <polyline points="50,61 136,74 222,74 288,74" fill="none" stroke="#e8832a" stroke-width="1.8"/>
+          <circle cx="50"  cy="61" r="2.8" fill="#e8832a"/>
+          <circle cx="136" cy="74" r="2.8" fill="#e8832a"/>
+          <circle cx="222" cy="74" r="2.8" fill="#e8832a"/>
+          <circle cx="288" cy="74" r="2.8" fill="#e8832a"/>
+          <text x="295" y="77"  font-size="8.5" fill="#e8832a" text-anchor="start" font-weight="700" font-family="system-ui,sans-serif">3.0</text>
+          <!-- Gray dashed (Promedio del equipo): 3.5, 3.5, 3.4, 3.8 — y=58, 58, 61, 49 -->
+          <polyline points="50,58 136,58 222,61 288,49" fill="none" stroke="#9ba3b8" stroke-width="1.6" stroke-dasharray="5,3"/>
+          <circle cx="50"  cy="58" r="2.5" fill="#9ba3b8"/>
+          <circle cx="136" cy="58" r="2.5" fill="#9ba3b8"/>
+          <circle cx="222" cy="61" r="2.5" fill="#9ba3b8"/>
+          <circle cx="288" cy="49" r="2.5" fill="#9ba3b8"/>
+          <text x="295" y="52"  font-size="8.5" fill="#9ba3b8" text-anchor="start" font-weight="700" font-family="system-ui,sans-serif">3.8</text>
+          <!-- Blue solid (Con IA integrada): 3.5, 4.0, 4.0, 4.33 — y=58, 43, 43, 33 -->
+          <polyline points="50,58 136,43 222,43 288,33" fill="none" stroke="#2f4daa" stroke-width="2.2"/>
+          <circle cx="50"  cy="58" r="3.2" fill="#2f4daa"/>
+          <circle cx="136" cy="43" r="3.2" fill="#2f4daa"/>
+          <circle cx="222" cy="43" r="3.2" fill="#2f4daa"/>
+          <circle cx="288" cy="33" r="4"   fill="#2f4daa"/>
+          <!-- "▲ ambas" label -->
+          <text x="268" y="26" font-size="7.5" fill="#2f4daa" text-anchor="middle" font-weight="700" font-family="system-ui,sans-serif">▲ ambas</text>
+          <text x="295" y="36"  font-size="8.5" fill="#2f4daa" text-anchor="start" font-weight="700" font-family="system-ui,sans-serif">4.33</text>
+          <!-- Legend: 2 rows -->
+          <line x1="35" y1="162" x2="52" y2="162" stroke="#2f4daa" stroke-width="2"/>
+          <circle cx="43" cy="162" r="2.3" fill="#2f4daa"/>
+          <text x="55" y="165" font-size="6.5" fill="#1e2432" font-family="system-ui,sans-serif">Con IA integrada</text>
+          <line x1="160" y1="162" x2="177" y2="162" stroke="#9ba3b8" stroke-width="1.6" stroke-dasharray="4,2"/>
+          <text x="180" y="165" font-size="6.5" fill="#1e2432" font-family="system-ui,sans-serif">Promedio del equipo</text>
+          <line x1="35" y1="173" x2="52" y2="173" stroke="#e8832a" stroke-width="1.8"/>
+          <circle cx="43" cy="173" r="2.3" fill="#e8832a"/>
+          <text x="55" y="176" font-size="6.5" fill="#1e2432" font-family="system-ui,sans-serif">Sin IA integrada</text>
+        </svg>
+      </div>
+
+    </div>
+
+    <!-- Bottom: Productividad + Pierdo tiempo comparison -->
+    <div style="width:100%;display:grid;grid-template-columns:1fr 1fr;gap:1.2vw;margin-top:0.1vw;">
+
+      <div style="display:flex;align-items:center;gap:0.8vw;padding:0.65vw 1vw;background:white;border-radius:8px;border:1px solid rgba(47,77,170,0.12);">
+        <div style="font-size:var(--xs);font-weight:600;color:var(--mist);padding-right:0.8vw;border-right:1px solid rgba(0,0,0,0.08);white-space:nowrap;">Autonomía promedio</div>
+        <div style="display:flex;gap:1.2vw;align-items:center;padding-left:0.4vw;">
+          <div>
+            <div style="font-size:0.62rem;color:var(--mist);">IA integrada</div>
+            <div style="font-size:var(--base);font-weight:900;color:var(--brand);">↑ 3.33<span style="font-size:var(--xs);font-weight:400;color:var(--mist);"> / 5</span></div>
+          </div>
+          <div style="width:1px;height:1.6rem;background:rgba(0,0,0,0.08);"></div>
+          <div>
+            <div style="font-size:0.62rem;color:var(--mist);">IA parcial/puntual</div>
+            <div style="font-size:var(--base);font-weight:900;color:var(--mist);">↓ 2.91<span style="font-size:var(--xs);font-weight:400;color:var(--mist);"> / 5</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:0.8vw;padding:0.65vw 1vw;background:white;border-radius:8px;border:1px solid rgba(47,77,170,0.12);">
+        <div style="font-size:var(--xs);font-weight:600;color:var(--mist);padding-right:0.8vw;border-right:1px solid rgba(0,0,0,0.08);white-space:nowrap;">Productividad percibida promedio</div>
+        <div style="display:flex;gap:1.2vw;align-items:center;padding-left:0.4vw;">
+          <div>
+            <div style="font-size:0.62rem;color:var(--mist);">IA integrada</div>
+            <div style="font-size:var(--base);font-weight:900;color:var(--sky);">↑ 3.89<span style="font-size:var(--xs);font-weight:400;color:var(--mist);"> / 5</span></div>
+          </div>
+          <div style="width:1px;height:1.6rem;background:rgba(0,0,0,0.08);"></div>
+          <div>
+            <div style="font-size:0.62rem;color:var(--mist);">Sin IA integrada</div>
+            <div style="font-size:var(--base);font-weight:900;color:var(--warn);">↓ 3.09<span style="font-size:var(--xs);font-weight:400;color:var(--mist);"> / 5</span></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  
+
+  <div class="slide slide--brand" data-i="42">
+    <div class="block-rule"></div>
+    <h2 class="block-title">Lo que te llevas</h2>
+    <p class="block-sub">Aplicable en cualquier equipo de diseño</p>
+  </div>
+
+  <div class="slide slide--light" data-i="16">
+    <h2 class="slide-title">Las soluciones que escalan siguen el mismo patrón</h2>
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:1vw;max-width:60rem;margin-top:0.5vw;">
+      <div class="goal-item"><div class="goal-k">01</div><div class="goal-v">Encontrar dónde falta capacidad</div></div>
+      <div class="goal-item"><div class="goal-k">02</div><div class="goal-v">Capturar contexto y criterio</div></div>
+      <div class="goal-item"><div class="goal-k">03</div><div class="goal-v">Convertirlo en algo reutilizable</div></div>
+      <div class="goal-item"><div class="goal-k">04</div><div class="goal-v">Meterlo dentro del workflow</div></div>
+      <div class="goal-item"><div class="goal-k">05</div><div class="goal-v">Medir si cambia el resultado</div></div>
+    </div>
+    <div style="display:flex;gap:3vw;max-width:60rem;margin-top:0.5vw;">
+      <div style="border-left:3px solid rgba(232,93,58,0.5);padding-left:1rem;">
+        <div style="font-size:var(--xs);font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--warn);margin-bottom:0.4vw;">No medimos</div>
+        <div class="slide-body" style="font-size:var(--sm);">
+          <div class="row"><span class="icon">·</span><span>Prompts o agentes creados</span></div>
+          <div class="row"><span class="icon">·</span><span>"Horas de IA"</span></div>
+          <div class="row"><span class="icon">·</span><span>Adopción de herramientas</span></div>
+        </div>
+      </div>
+      <div style="border-left:3px solid var(--brand);padding-left:1rem;">
+        <div style="font-size:var(--xs);font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--brand);margin-bottom:0.4vw;">Medimos</div>
+        <div class="slide-body" style="font-size:var(--sm);">
+          <div class="row"><span class="icon">·</span><span>Calidad</span></div>
+          <div class="row"><span class="icon">·</span><span>Cobertura</span></div>
+          <div class="row"><span class="icon">·</span><span>Autonomía</span></div>
+        </div>
+      </div>
+    </div>
+    <p class="bridge-note">ADOPCIÓN ≠ IMPACTO. La pregunta no es "¿cuánto usan IA?". El so what es: ¿qué problema que antes teníamos hoy ya no tenemos?</p>
+  </div>
+ 
+  <div id="nav">
+    <button class="nav-btn" id="prevBtn" onclick="go(-1)" disabled>&#8592;</button>
+    <div id="picker-wrap">
+      <span id="counter">1 / 58</span>
+      <div id="slide-picker"></div>
+    </div>
+    <button class="nav-btn" id="nextBtn" onclick="go(1)">&#8594;</button>
+    <button id="fullscreenBtn" title="Pantalla completa" onclick="toggleFullscreen()">⛶</button>
+  </div>
+
+  <div class="slide slide--brand" data-i="46">
+    <div class="block-rule"></div>
+    <h2 class="block-title">Recursos + contacto</h2>
+    <p class="block-sub">Escanea el QR para acceder a los recursos mencionados en esta sesión</p>
+    <img src="data:image/png;base64,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" alt="QR código" style="width:clamp(200px,22vw,320px);height:auto;border-radius:8px;margin-top:1.5vw;display:block;">
+  </div>
+
+</div>
+
+<script>
+const slides = [...document.querySelectorAll('.slide')].filter(s => !s.dataset.skip);
+const total  = slides.length;
+let current  = 0;
+let busy     = false;
+const overlay = document.getElementById('overlay');
+
+function updateNav() {
+  document.getElementById('counter').textContent = (current + 1) + ' / ' + total;
+  document.getElementById('prevBtn').disabled = current === 0;
+  document.getElementById('nextBtn').disabled = current === total - 1;
+  document.getElementById('progress').style.width = ((current + 1) / total * 100) + '%';
+  history.replaceState(null, '', '#' + (current + 1));
+}
+
+function show(n) {
+  n = Math.max(0, Math.min(n, total - 1));
+  if (n === current || busy) return;
+  busy = true;
+  overlay.style.opacity = '1';
+  setTimeout(function() {
+    slides[current].classList.remove('active');
+    current = n;
+    slides[current].classList.add('active');
+    updateNav();
+    requestAnimationFrame(function() { requestAnimationFrame(function() {
+      overlay.style.opacity = '0';
+      setTimeout(function() { busy = false; }, 260);
+    }); });
+  }, 210);
+}
+
+function go(dir) { show(current + dir); }
+
+document.addEventListener('keydown', function(e) {
+  if (['ArrowRight','ArrowDown',' '].indexOf(e.key) >= 0) { e.preventDefault(); go(1); }
+  if (['ArrowLeft','ArrowUp','Backspace'].indexOf(e.key) >= 0) { e.preventDefault(); go(-1); }
+  if (e.key === 'Home') show(0);
+  if (e.key === 'End')  show(total - 1);
+  if (e.key === 'Escape') closePicker();
+});
+
+// Slide picker
+const picker = document.getElementById('slide-picker');
+const counterEl = document.getElementById('counter');
+
+function getSlideTitle(slide, i) {
+  var sels = ['.cover-title','.slide-title','.block-title','.statement','.eyebrow-label'];
+  for (var s = 0; s < sels.length; s++) {
+    var el = slide.querySelector(sels[s]);
+    if (el) {
+      var t = el.textContent.trim().replace(/\s+/g, ' ');
+      return t.length > 48 ? t.slice(0, 46) + '…' : t;
+    }
+  }
+  return 'Diapositiva ' + (i + 1);
+}
+
+function buildPicker() {
+  picker.innerHTML = '';
+  slides.forEach(function(slide, i) {
+    var item = document.createElement('div');
+    item.className = 'picker-item' + (i === current ? ' active-slide' : '');
+    var num = document.createElement('span');
+    num.className = 'picker-num';
+    num.textContent = i + 1;
+    var label = document.createElement('span');
+    label.className = 'picker-label';
+    label.textContent = getSlideTitle(slide, i);
+    item.appendChild(num);
+    item.appendChild(label);
+    (function(idx) {
+      item.addEventListener('click', function(e) {
+        e.stopPropagation();
+        closePicker();
+        show(idx);
+      });
+    })(i);
+    picker.appendChild(item);
+  });
+}
+
+function openPicker() {
+  buildPicker();
+  picker.classList.add('open');
+  var active = picker.querySelector('.active-slide');
+  if (active) active.scrollIntoView({ block: 'nearest' });
+}
+
+function closePicker() {
+  picker.classList.remove('open');
+}
+
+counterEl.addEventListener('click', function(e) {
+  e.stopPropagation();
+  if (picker.classList.contains('open')) closePicker();
+  else openPicker();
+});
+
+document.addEventListener('click', function() { closePicker(); });
+picker.addEventListener('click', function(e) { e.stopPropagation(); });
+
+// Saltar a la slide indicada en el hash al cargar (ej: archivo.html#8)
+(function() {
+  var hash = window.location.hash;
+  if (hash) {
+    var n = parseInt(hash.slice(1), 10) - 1;
+    if (!isNaN(n) && n > 0 && n < total) {
+      slides[0].classList.remove('active');
+      slides[n].classList.add('active');
+      current = n;
+    }
+  }
+})();
+updateNav();
+
+function toggleFullscreen() {
+  const btn = document.getElementById('fullscreenBtn');
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen().catch(() => {});
+    btn.textContent = '⛶';
+    btn.title = 'Salir de pantalla completa';
+  } else {
+    document.exitFullscreen().catch(() => {});
+    btn.title = 'Pantalla completa';
+  }
+}
+document.addEventListener('fullscreenchange', function() {
+  const btn = document.getElementById('fullscreenBtn');
+  if (document.fullscreenElement) {
+    btn.innerHTML = '&#x2715;';
+  } else {
+    btn.textContent = '⛶';
+  }
+});
+</script>
