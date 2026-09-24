@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Asignación de Bienes — Solicitudes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<style>
+:root {
+  --brand-purple:       #2F4DAA;
+  --brand-purple-light: #6C87D8;
+  --brand-purple-dark:  #172A7A;
+  --warn-orange: #F99304;
+  --warn-red:    #F95E50;
+  --ok-green:    #6BC64C;
+  --gray-50:  #FAFCFD;
+  --gray-100: #F0F1F3;
+  --gray-200: #E4E5E7;
+  --gray-400: #C1C2C4;
+  --gray-500: #A3A4A5;
+  --gray-600: #797A7C;
+  --gray-700: #656668;
+  --gray-800: #242527;
+  --gray-900: #091351;
+  --radius: 12px;
+  --shadow: 0 1px 3px 1px rgba(0,0,0,.15), 0 1px 2px 0 rgba(0,0,0,.30);
+}
+*,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body { font-family: "Nunito Sans", sans-serif; background: var(--gray-50); color: var(--gray-800); font-size: 15px; line-height: 1.6; }
+nav { position: sticky; top: 0; z-index: 100; background: rgba(255,255,255,.92); backdrop-filter: blur(12px); border-bottom: 1px solid var(--gray-200); padding: 0 32px; display: flex; align-items: center; gap: 28px; height: 52px; }
+nav .logo { font-weight: 700; font-size: 15px; color: var(--brand-purple); letter-spacing: -0.3px; }
+nav a { font-size: 13px; font-weight: 500; color: var(--gray-600); text-decoration: none; white-space: nowrap; }
+nav a:hover { color: var(--brand-purple); }
+nav .spacer { flex: 1; }
+nav .badge { background: #FDDD80; color: #92400e; border: 1px solid #F99304; border-radius: 20px; padding: 3px 10px; font-size: 12px; font-weight: 600; }
+.btn-pdf { background: var(--brand-purple); color: white; border: none; border-radius: 8px; padding: 6px 14px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: inherit; }
+.btn-pdf:hover { background: var(--brand-purple-dark); }
+.hero { background: linear-gradient(135deg, var(--brand-purple-dark) 0%, var(--brand-purple) 60%, var(--brand-purple-light) 100%); padding: 56px 48px 48px; color: white; }
+.hero-inner { max-width: 1100px; margin: 0 auto; }
+.hero-eyebrow { display: inline-block; background: rgba(255,255,255,.15); border: 1px solid rgba(255,255,255,.25); border-radius: 20px; padding: 4px 14px; font-size: 12px; font-weight: 600; letter-spacing: .5px; text-transform: uppercase; margin-bottom: 20px; }
+.hero h1 { font-size: clamp(26px,4vw,42px); font-weight: 800; letter-spacing: -1px; line-height: 1.15; margin-bottom: 10px; }
+.hero-sub { font-size: 16px; opacity: .8; max-width: 620px; margin-bottom: 40px; }
+.kpi-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(190px,1fr)); gap: 14px; }
+.kpi { background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.2); border-radius: var(--radius); padding: 18px 20px; }
+.kpi-val { font-size: 32px; font-weight: 800; letter-spacing: -1px; line-height: 1; }
+.kpi-sub { font-size: 11px; opacity: .55; margin-top: 3px; }
+.kpi-label { font-size: 12px; opacity: .75; margin-top: 6px; font-weight: 500; }
+.container { max-width: 1100px; margin: 0 auto; padding: 0 32px; }
+section { padding: 52px 0; }
+section + section { border-top: 1px solid var(--gray-200); }
+h2 { font-size: 22px; font-weight: 700; letter-spacing: -.4px; color: var(--gray-900); margin-bottom: 6px; }
+h3 { font-size: 16px; font-weight: 600; color: var(--gray-800); margin-bottom: 12px; }
+.section-desc { color: var(--gray-600); font-size: 14px; margin-bottom: 28px; max-width: 680px; }
+p { margin-bottom: 1em; }
+.card { background: white; border-radius: var(--radius); border: 1px solid var(--gray-200); box-shadow: var(--shadow); padding: 24px; }
+.callout { border-radius: var(--radius); padding: 18px 20px; display: flex; gap: 14px; align-items: flex-start; margin-bottom: 14px; }
+.callout-icon { font-size: 22px; flex-shrink: 0; }
+.callout-body { flex: 1; }
+.callout-body strong { font-weight: 700; font-size: 14px; display: block; margin-bottom: 4px; }
+.callout-body p { font-size: 13px; line-height: 1.55; margin: 0; }
+.callout.red    { background: #FFE0CD; border: 1px solid #F95E50; }
+.callout.orange { background: #FDDD80; border: 1px solid #F99304; }
+.callout.blue   { background: #D9E2F9; border: 1px solid #2F4DAA; }
+.callout.green  { background: #DDF7BF; border: 1px solid #6BC64C; }
+.chart-wrap { position: relative; height: 280px; }
+.chart-wrap-tall { position: relative; height: 360px; }
+.tbl-wrap { overflow-x: auto; border-radius: var(--radius); border: 1px solid var(--gray-200); }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+thead th { background: var(--gray-50); padding: 10px 14px; text-align: left; font-weight: 600; font-size: 12px; color: var(--gray-600); border-bottom: 1px solid var(--gray-200); }
+tbody td { padding: 10px 14px; border-bottom: 1px solid var(--gray-100); vertical-align: middle; }
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover { background: var(--gray-50); }
+.badge-pill { display: inline-block; padding: 2px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+.badge-red    { background: #FFE0CD; color: #C0251A; }
+.badge-orange { background: #FDDD80; color: #7A4A00; border: 1px solid #F99304; }
+.badge-green  { background: #DDF7BF; color: #2D6A0F; }
+.badge-blue   { background: #D9E2F9; color: #2F4DAA; }
+.badge-gray   { background: #F0F1F3; color: #656668; }
+.session-card { background: white; border: 1px solid var(--gray-200); border-radius: var(--radius); padding: 14px 18px; margin-bottom: 10px; display: flex; align-items: flex-start; gap: 12px; }
+.session-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
+.session-dot.red    { background: var(--warn-red); }
+.session-dot.orange { background: var(--warn-orange); }
+.session-body { flex: 1; font-size: 13px; }
+.session-meta { color: var(--gray-500); font-size: 12px; margin-top: 3px; }
+.session-link { color: var(--brand-purple); font-weight: 600; text-decoration: none; }
+.session-link:hover { text-decoration: underline; }
+.source-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(200px,1fr)); gap: 14px; }
+.source-card { background: white; border: 1px solid var(--gray-200); border-radius: var(--radius); padding: 16px 18px; border-top: 3px solid var(--brand-purple); }
+.source-num { font-size: 11px; font-weight: 700; color: var(--brand-purple); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 6px; }
+.source-name { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+.source-desc { font-size: 12px; color: var(--gray-600); }
+.question-card { background: white; border: 1px solid var(--gray-200); border-radius: var(--radius); padding: 20px 24px; margin-bottom: 14px; }
+.question-label { font-size: 11px; font-weight: 700; color: var(--brand-purple); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 8px; }
+.question-text { font-size: 15px; font-weight: 600; color: var(--gray-900); margin-bottom: 10px; }
+.question-answer { font-size: 13px; color: var(--gray-700); line-height: 1.6; }
+footer { background: var(--gray-900); color: var(--gray-400); padding: 32px; text-align: center; font-size: 13px; }
+footer strong { color: white; }
+@media print {
+  nav, .btn-pdf { display: none; }
+  .hero { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .callout { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  section { padding: 24px 0; }
+  .chart-wrap, .chart-wrap-tall { break-inside: avoid; }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <span class="logo">Cauce · Control de Bienes</span>
+  <a href="#preguntas">Preguntas</a>
+  <a href="#hallazgos">Hallazgos</a>
+  <a href="#sesiones">Sesiones</a>
+  <a href="#patrones">Patrones</a>
+  <a href="#fuentes">Fuentes</a>
+  <span class="spacer"></span>
+  <span class="badge">Ene – Jun 2026</span>
+  <button class="btn-pdf" onclick="window.print()">⬇ Descargar PDF</button>
+</nav>
+
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-eyebrow">Asignación de bienes · Central de Solicitudes · Todos los países</div>
+    <h1>15 segundos: eso tardan en asignar un bien desde la Central de Solicitudes</h1>
+    <p class="hero-sub">
+      La mediana de tiempo entre abrir el formulario de asignación y confirmarlo es de 15 segundos. Pero el promedio es de 6 minutos — una diferencia de 24 veces que revela dos poblaciones: quienes completan sin fricción y quienes necesitan ir a buscar datos a otra parte de la plataforma antes de confirmar.
+    </p>
+    <div class="kpi-grid">
+      <div class="kpi">
+        <div class="kpi-val">15 s</div>
+        <div class="kpi-label">Mediana de tiempo</div>
+        <div class="kpi-sub">La mitad completa en menos de esto</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-val">6 min</div>
+        <div class="kpi-label">Promedio de tiempo</div>
+        <div class="kpi-sub">24× la mediana — cola larga</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-val">86%</div>
+        <div class="kpi-label">Tasa de completación</div>
+        <div class="kpi-sub">300 de 350 usuarios que inician</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-val">10.800</div>
+        <div class="kpi-label">Asignaciones iniciadas</div>
+        <div class="kpi-sub">Ene–Jun 2026, todos los países</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-val">42%</div>
+        <div class="kpi-label">Completa sin navegar</div>
+        <div class="kpi-sub">Pasa directo a confirmar</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<section id="preguntas">
+  <div class="container">
+    <h2>Preguntas de investigación</h2>
+    <p class="section-desc">
+      Pregunta central: ¿cuánto tardan los administradores de Control de Bienes en asignar un bien desde la central de Solicitudes? Las preguntas complementarias indagan en los patrones alrededor de esa tarea.
+    </p>
+
+    <div class="question-card">
+      <div class="question-label">Pregunta central</div>
+      <div class="question-text">¿Cuánto tiempo tardan los administradores en asignar un bien desde la central de Solicitudes?</div>
+      <div class="question-answer">
+        <strong>Respuesta directa: la mediana es de 15 segundos, el promedio de 360 segundos (6 minutos).</strong> La diferencia revela dos comportamientos: el 42% de los usuarios completa inmediatamente (su siguiente acción es confirmar la asignación), mientras que el 13% navega primero al inventario y el 15% vuelve a la lista de solicitudes antes de completar. El 70% de quienes empiezan completa dentro de la primera hora; un 17% tarda entre 1 y 2 horas; el resto se extiende hasta 7 horas.
+      </div>
+    </div>
+
+    <div class="question-card">
+      <div class="question-label">Pregunta 1</div>
+      <div class="question-text">¿El usuario completó la asignación en la misma sesión?</div>
+      <div class="question-answer">
+        Sí, en la gran mayoría. De los 350 usuarios únicos que iniciaron una asignación, 300 la completaron (86%). Solo el 8% terminó la sesión inmediatamente después de iniciar sin completar — el abandono verdadero es bajo.
+      </div>
+    </div>
+
+    <div class="question-card">
+      <div class="question-label">Pregunta 2</div>
+      <div class="question-text">Si no completó, ¿qué hizo inmediatamente después?</div>
+      <div class="question-answer">
+        El análisis de trayectoria muestra que después de iniciar la asignación, el evento inmediato siguiente se distribuye así: <strong>42% completa</strong> (confirma), <strong>15% vuelve a la lista de solicitudes</strong>, <strong>13% va al inventario</strong>, <strong>8% cierra la sesión</strong>, <strong>6% inicia otra asignación</strong>, y <strong>5% pasa a rechazar</strong> una solicitud. Las sesiones grabadas confirman el patrón: los usuarios rebotan entre inventario y solicitudes buscando información del bien o verificando disponibilidad.
+      </div>
+    </div>
+
+    <div class="question-card">
+      <div class="question-label">Pregunta 3</div>
+      <div class="question-text">¿Hay usuarios que repiten "Iniciar" muchas veces sin completar?</div>
+      <div class="question-answer">
+        No como patrón de frustración. El 43% de los usuarios inicia solo una vez. En el extremo opuesto, 20 usuarios (6%) ejecutaron más de 100 asignaciones — operadores de volumen. En las trayectorias, el patrón más común es Start → Assign → volver a la lista → Start → Assign: asignación secuencial repetida, no intentos fallidos.
+      </div>
+    </div>
+
+    <div class="question-card">
+      <div class="question-label">Pregunta 4</div>
+      <div class="question-text">¿Varía significativamente el tiempo entre Iniciar y Asignar?</div>
+      <div class="question-answer">
+        Sí, de forma extrema. La distribución temporal muestra: 70% completa en menos de 1 hora, 17% entre 1 y 2 horas, 7% entre 2 y 3 horas, y un 7% entre 3 y 7 horas. Los usuarios de la cola larga probablemente dejan la tarea abierta mientras buscan datos en otra sección o atienden otra prioridad.
+      </div>
+    </div>
+
+    <div class="question-card">
+      <div class="question-label">Pregunta 5</div>
+      <div class="question-text">¿Existen patrones de día/hora en el abandono?</div>
+      <div class="question-answer">
+        No fue posible obtener el desglose por día de la semana — la propiedad temporal detallada no está disponible en la instrumentación actual. El patrón mensual muestra un pico en abril (2.700 inicios), coincidente con el ciclo de onboarding del primer semestre, seguido de un descenso en mayo y junio.
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="hallazgos">
+  <div class="container">
+    <h2>Hallazgos</h2>
+    <p class="section-desc">
+      Análisis cruzado de datos de uso, trayectorias de navegación, tickets a SAC y sesiones grabadas entre el 1 de enero y el 11 de junio de 2026, todos los países.
+    </p>
+
+    <h3>Dos poblaciones: quienes completan al vuelo y quienes necesitan buscar datos</h3>
+    <p>
+      La diferencia de 24 veces entre la mediana (15 segundos) y el promedio (360 segundos) no es ruido estadístico — es la evidencia de dos modos de uso distintos. El análisis de trayectoria lo confirma: el 42% de los usuarios pasa directamente de iniciar a confirmar la asignación. Pero el 28% (15% vuelve a la lista + 13% va al inventario) necesita navegar a otro lugar antes de completar.
+    </p>
+
+    <div class="card" style="margin: 20px 0">
+      <h3>¿Qué hacen los usuarios después de iniciar la asignación?</h3>
+      <p style="font-size:12px;color:var(--gray-500);margin-bottom:14px">Primer evento registrado tras abrir el formulario de asignación (últimos 30 días, 150 usuarios)</p>
+      <div class="chart-wrap">
+        <canvas id="chart-journey"></canvas>
+      </div>
+    </div>
+    <script>
+    const BRAND = { purple:'#2F4DAA', purpleLight:'#6C87D8', purpleDark:'#172A7A', orange:'#F99304', red:'#F95E50', green:'#6BC64C', gray:'#A3A4A5', gray200:'#E4E5E7' };
+    new Chart(document.getElementById('chart-journey'), {
+      type: 'bar',
+      data: {
+        labels: ['Completa la\nasignación', 'Vuelve a la\nlista de solicitudes', 'Va al\ninventario', 'Cierra\nla sesión', 'Inicia otra\nasignación', 'Pasa a\nrechazar'],
+        datasets: [{
+          label: 'Usuarios',
+          data: [60, 20, 20, 10, 10, 10],
+          backgroundColor: [BRAND.green, BRAND.purple, BRAND.purpleLight, BRAND.red, BRAND.orange, BRAND.gray],
+          borderRadius: 6,
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ` ${ctx.parsed.y} usuarios (${(ctx.parsed.y/150*100).toFixed(1)}%)` } } },
+        scales: {
+          y: { grid: { color: BRAND.gray200 }, ticks: { font: { family: 'Nunito Sans', size: 12 } } },
+          x: { grid: { display: false }, ticks: { font: { family: 'Nunito Sans', size: 11 }, maxRotation: 0 } }
+        }
+      }
+    });
+    </script>
+
+    <p>
+      Las sesiones grabadas confirman esta lectura. En una sesión de un cliente peruano, el usuario navega entre el proceso de workflow, la pantalla de solicitudes y los formularios de operación — la asignación es una tarea dentro de un flujo más amplio. En otra sesión de un cliente chileno, el usuario va de inventario a solicitudes, abre el formulario de nueva solicitud, vuelve, abre de nuevo, vuelve — el patrón clásico de quien no encuentra lo que necesita en la pantalla actual.
+    </p>
+
+    <h3 style="margin-top:32px">La distribución del tiempo tiene una cola larga hacia las horas</h3>
+    <p>
+      El 70% de los usuarios completa la asignación en menos de una hora. Pero el 30% restante se extiende entre 1 y 7 horas. Esto no significa que el formulario sea complejo — 15 segundos de mediana lo descarta — sino que la tarea de asignar depende de información que no siempre está disponible al momento de abrir el formulario: el bien correcto, el colaborador, la verificación de disponibilidad.
+    </p>
+
+    <div class="card" style="margin: 20px 0">
+      <h3>Distribución del tiempo entre inicio y asignación</h3>
+      <p style="font-size:12px;color:var(--gray-500);margin-bottom:14px">El 70% completa en la primera hora — el resto se extiende hasta 7 horas</p>
+      <div class="chart-wrap">
+        <canvas id="chart-duration"></canvas>
+      </div>
+    </div>
+    <script>
+    new Chart(document.getElementById('chart-duration'), {
+      type: 'bar',
+      data: {
+        labels: ['< 1 hora', '1–2 horas', '2–3 horas', '3–4 horas', '6–7 horas'],
+        datasets: [{
+          label: 'Porcentaje de usuarios',
+          data: [70, 17, 7, 3, 3],
+          backgroundColor: [BRAND.green, BRAND.purpleLight, BRAND.orange, BRAND.red, BRAND.red],
+          borderRadius: 6,
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ` ${ctx.parsed.y}% de los usuarios` } } },
+        scales: {
+          y: { grid: { color: BRAND.gray200 }, ticks: { font: { family: 'Nunito Sans', size: 12 }, callback: v => v+'%' } },
+          x: { grid: { display: false }, ticks: { font: { family: 'Nunito Sans', size: 12 } } }
+        }
+      }
+    });
+    </script>
+
+    <h3 style="margin-top:32px">El volumen crece hasta abril y después cae — ciclo de onboarding</h3>
+
+    <div class="card" style="margin: 20px 0">
+      <h3>Volumen de asignaciones por mes</h3>
+      <p style="font-size:12px;color:var(--gray-500);margin-bottom:14px">Pico en abril coincide con el ingreso masivo de nuevos colaboradores</p>
+      <div class="chart-wrap">
+        <canvas id="chart-monthly"></canvas>
+      </div>
+    </div>
+    <script>
+    new Chart(document.getElementById('chart-monthly'), {
+      type: 'line',
+      data: {
+        labels: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio'],
+        datasets: [
+          { label: 'Iniciadas', data: [1400, 1800, 2200, 2700, 1700, 1000], borderColor: BRAND.purple, backgroundColor: 'rgba(47,77,170,0.1)', fill: true, tension: 0.3, pointRadius: 5, pointBackgroundColor: BRAND.purple },
+          { label: 'Completadas', data: [1500, 1800, 2200, 2700, 1700, 1100], borderColor: BRAND.green, backgroundColor: 'transparent', borderDash: [5,3], tension: 0.3, pointRadius: 4, pointBackgroundColor: BRAND.green }
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { position: 'bottom', labels: { font: { family: 'Nunito Sans', size: 12 }, usePointStyle: true } }, tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y.toLocaleString('es-CL')}` } } },
+        scales: {
+          y: { grid: { color: BRAND.gray200 }, ticks: { font: { family: 'Nunito Sans', size: 12 } } },
+          x: { grid: { display: false }, ticks: { font: { family: 'Nunito Sans', size: 12 } } }
+        }
+      }
+    });
+    </script>
+
+    <p>
+      El volumen mensual de asignaciones creció de 1.400 en enero a 2.700 en abril (pico) y luego descendió a 1.000 en junio. Todos los meses muestran más asignaciones completadas que iniciadas — 200 asignaciones más en total — lo que indica que existen puntos de entrada que no pasan por el evento de inicio instrumentado.
+    </p>
+
+    <h3 style="margin-top:32px">La carga masiva genera duplicados y es el peor punto de contacto con soporte</h3>
+    <p>
+      De los 120 tickets a SAC clasificados bajo Control de Bienes, 10 corresponden al subflujo "Crear Bienes con Carga Masiva" — la carga masiva. Este subflujo tiene el peor CSAT del módulo: 3,4 sobre 5, con 31% de usuarios enojados. Ningún otro subflujo concentra tanta frustración proporcional. El patrón en los tickets a SAC es consistente: el usuario carga bienes, la carga masiva genera duplicados, y necesita soporte para eliminar los registros erróneos.
+    </p>
+
+    <div class="card" style="margin: 20px 0">
+      <h3>Tickets a SAC por subflujo</h3>
+      <p style="font-size:12px;color:var(--gray-500);margin-bottom:14px">La carga masiva (rojo) tiene el peor CSAT del módulo</p>
+      <div class="chart-wrap-tall">
+        <canvas id="chart-subflujos"></canvas>
+      </div>
+    </div>
+    <script>
+    new Chart(document.getElementById('chart-subflujos'), {
+      type: 'bar',
+      data: {
+        labels: ['Configuración inicial', 'Sin clasificar', 'Eliminar bien', 'Carga masiva', 'Crear plantillas', 'Inventario general', 'Crear modelos', 'Crear bien manual', 'Vincular plantillas', 'Crear solicitud'],
+        datasets: [{
+          label: 'Tickets a SAC',
+          data: [20, 15, 10, 10, 10, 5, 5, 5, 5, 5],
+          backgroundColor: [BRAND.purple, BRAND.gray, BRAND.purpleLight, BRAND.red, BRAND.purple, BRAND.purpleLight, BRAND.purple, BRAND.purpleLight, BRAND.purple, BRAND.purpleLight],
+          borderRadius: 6,
+        }]
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => { const csats = [4.9, null, 5.0, 3.4, 4.3, 3.0, 4.5, 5.0, 3.0, null]; const c = csats[ctx.dataIndex]; return ` ${ctx.parsed.x} tickets` + (c ? ` · CSAT ${c.toFixed(1)}` : ''); }}} },
+        scales: {
+          x: { grid: { color: BRAND.gray200 }, ticks: { font: { family: 'Nunito Sans', size: 12 } } },
+          y: { grid: { display: false }, ticks: { font: { family: 'Nunito Sans', size: 11 } } }
+        }
+      }
+    });
+    </script>
+
+    <div class="callout red">
+      <div class="callout-icon">⚠</div>
+      <div class="callout-body">
+        <strong>La carga masiva genera duplicados sin advertencia</strong>
+        <p>Tres tickets a SAC describen el mismo patrón: carga de bienes con la carga masiva → duplicados creados sin aviso → eliminación manual con ayuda de soporte. En un caso, la misma usuaria abrió dos tickets el mismo día — uno para la asignación masiva y otro para eliminar los duplicados.</p>
+      </div>
+    </div>
+
+    <h3 style="margin-top:32px">Los clics sin respuesta y los retornos rápidos dominan la fricción visual</h3>
+    <p>
+      En las 3.900 sesiones registradas en la vista de Solicitudes, se detectaron 5.200 clics sin respuesta (1,4 por sesión) y 7.500 retornos rápidos (2,0 por sesión). Los retornos rápidos son la señal más fuerte: los usuarios entran a sub-pantallas y vuelven inmediatamente. Las trayectorias de las sesiones grabadas muestran el patrón concreto: un usuario chileno va de inventario a solicitudes, abre el formulario de nueva solicitud, vuelve, abre de nuevo, vuelve — tres veces seguidas.
+    </p>
+
+    <div class="card" style="margin: 20px 0">
+      <h3>Indicadores de fricción en la pantalla de Solicitudes</h3>
+      <p style="font-size:12px;color:var(--gray-500);margin-bottom:14px">3.900 sesiones analizadas — los retornos rápidos superan a los clics sin respuesta</p>
+      <div class="chart-wrap">
+        <canvas id="chart-friction"></canvas>
+      </div>
+    </div>
+    <script>
+    new Chart(document.getElementById('chart-friction'), {
+      type: 'bar',
+      data: {
+        labels: ['Retornos rápidos\n(quick backs)', 'Clics sin respuesta\n(dead clicks)', 'Interacciones con ira\n(rage clicks)'],
+        datasets: [
+          { label: 'Total', data: [7500, 5200, 50], backgroundColor: [BRAND.purple, BRAND.orange, BRAND.red], borderRadius: 6, yAxisID: 'y' },
+          { label: 'Por sesión', data: [2.0, 1.4, 0.01], backgroundColor: ['rgba(47,77,170,0.3)', 'rgba(249,147,4,0.3)', 'rgba(249,94,80,0.3)'], borderRadius: 6, yAxisID: 'y1' }
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { position: 'bottom', labels: { font: { family: 'Nunito Sans', size: 12 }, usePointStyle: true, pointStyle: 'rectRounded' } } },
+        scales: {
+          y: { type: 'linear', position: 'left', grid: { color: BRAND.gray200 }, ticks: { font: { family: 'Nunito Sans', size: 12 } }, title: { display: true, text: 'Total', font: { family: 'Nunito Sans', size: 11 } } },
+          y1: { type: 'linear', position: 'right', grid: { display: false }, ticks: { font: { family: 'Nunito Sans', size: 12 } }, title: { display: true, text: 'Por sesión', font: { family: 'Nunito Sans', size: 11 } } },
+          x: { grid: { display: false }, ticks: { font: { family: 'Nunito Sans', size: 11 }, maxRotation: 0 } }
+        }
+      }
+    });
+    </script>
+
+    <h3 style="margin-top:32px">Confusión conceptual entre "modelo" y "bien" — la documentación existe, pero no llega</h3>
+    <p>
+      Los tickets a SAC y una entrevista de discovery revelan un patrón cualitativo: los usuarios no distinguen claramente entre "modelo" (el catálogo — por ejemplo, "Zapato de seguridad") y "bien" (la unidad física — cada par individual). Un entrevistado preguntó: "¿cómo asigno 250 bienes que son el mismo zapato?" — la pregunta refleja que la lógica del inventario no es obvia. Los 20 tickets a SAC de "Configuración inicial" — el subflujo con mayor volumen — refuerzan esta lectura.
+    </p>
+    <p>
+      Sin embargo, la documentación sí aborda esta distinción. El centro de ayuda tiene artículos dedicados: "¿Qué es un bien?", "¿Qué son los Modelos?" y "¿Qué es la Asignación de Bienes?" — todos con definiciones claras y la relación entre ambos conceptos. Que 20 tickets a SAC sigan preguntando lo mismo sugiere que estos artículos no están llegando al usuario en el momento en que los necesita: probablemente la documentación es correcta pero no está vinculada desde la interfaz del módulo.
+    </p>
+
+    <h3 style="margin-top:32px">10 de 50 artículos tienen votos negativos — el contenido operativo no está funcionando</h3>
+    <p>
+      De los 50 artículos en la categoría de Control de Bienes, solo 1 tiene votos positivos ("¿Dónde configuro los atributos personalizados?", +2 votos). En cambio, 10 artículos tienen votos negativos — todos sobre tareas operativas concretas: crear un modelo, importar bienes masivamente, crear un bien, actualizar estado, configurar workflow, y consultar historial de solicitudes. Los artículos conceptuales (qué es un bien, qué es una solicitud) tienen 0 votos — ni útiles ni inútiles. El patrón: la documentación que explica conceptos se ignora; la que explica cómo hacer cosas no satisface.
+    </p>
+    <p>
+      Destaca el artículo de carga masiva (voto -1), que coincide con el subflujo de peor CSAT en soporte (3,4). El artículo no advierte sobre el riesgo de duplicados — el mismo problema que reportan los usuarios en soporte. La guía describe los pasos pero no los posibles errores ni cómo recuperarse de ellos.
+    </p>
+
+    <div class="callout blue" style="margin-top:24px">
+      <div class="callout-icon">💡</div>
+      <div class="callout-body">
+        <strong>Hallazgo no solicitado: el tracking de asignación está roto para tenants con devolución activa</strong>
+        <p>La función de devolución de bienes (feature flag) genera un modal con un identificador HTML distinto al esperado por el código de instrumentación. El evento de asignación no se registra para esos tenants. Los datos de este informe los excluyen para evitar distorsión, pero el volumen real de asignaciones es mayor al reportado.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="sesiones">
+  <div class="container">
+    <h2>Sesiones que vale la pena revisar</h2>
+    <p class="section-desc">
+      Sesiones con retornos rápidos (quick backs) en la pantalla de Solicitudes. Las trayectorias muestran los patrones de navegación concretos.
+    </p>
+
+    <h3>Patrón 1: Rebote entre inventario y solicitudes</h3>
+    <p style="font-size:13px;color:var(--gray-600);margin-bottom:14px">
+      El usuario navega entre el inventario de bienes y la central de solicitudes, verificando disponibilidad antes de asignar.
+    </p>
+
+    <div class="session-card">
+      <div class="session-dot red"></div>
+      <div class="session-body">
+        <strong>andina.cauce.cl</strong> · 7 páginas
+        <div class="session-meta">
+          Directorio de empleados → inventario → solicitudes → inventario → inventario → inventario → inventario. El usuario llega a solicitudes una vez y no vuelve — el resto de la sesión es en inventario.
+        </div>
+        <div style="margin-top:6px">
+          <a href="#" class="session-link" target="_blank">🔗 Ver sesión</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="session-card">
+      <div class="session-dot orange"></div>
+      <div class="session-body">
+        <strong>pacifico.cauce.cl</strong> · 15 páginas
+        <div class="session-meta">
+          Inventario → solicitudes → nueva solicitud → solicitudes → nueva solicitud → solicitudes → solicitudes → solicitudes. El usuario intenta crear una nueva solicitud tres veces, volviendo cada vez a la lista.
+        </div>
+        <div style="margin-top:6px">
+          <a href="#" class="session-link" target="_blank">🔗 Ver sesión</a>
+        </div>
+      </div>
+    </div>
+
+    <h3 style="margin-top:24px">Patrón 2: Asignación dentro de un flujo más amplio</h3>
+    <p style="font-size:13px;color:var(--gray-600);margin-bottom:14px">
+      La asignación de bienes es una tarea dentro de un proceso de onboarding o workflow, no una acción aislada.
+    </p>
+
+    <div class="session-card">
+      <div class="session-dot orange"></div>
+      <div class="session-body">
+        <strong>litoral.cauce.pe</strong> · 21 páginas
+        <div class="session-meta">
+          Procesos de workflow → formulario de operación → procesos → solicitudes de bienes → procesos → formulario → configuración de workflow. La asignación de bienes es un paso dentro del flujo de workflow.
+        </div>
+        <div style="margin-top:6px">
+          <a href="#" class="session-link" target="_blank">🔗 Ver sesión</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="session-card">
+      <div class="session-dot red"></div>
+      <div class="session-body">
+        <strong>altiplano.cauce.mx</strong> · 125 páginas
+        <div class="session-meta">
+          Plantillas de onboarding → categorías de bienes → inventario → edición de bien → inventario. Sesión extensa de configuración completa del módulo, no solo asignación.
+        </div>
+        <div style="margin-top:6px">
+          <a href="#" class="session-link" target="_blank">🔗 Ver sesión</a>
+        </div>
+      </div>
+    </div>
+
+    <p style="font-size:13px;color:var(--gray-500);margin-top:16px">
+      Revisar estas sesiones confirma si la fricción está en el botón de asignación (affordance) o en la necesidad de verificar datos antes de confirmar.
+    </p>
+  </div>
+</section>
+
+<section id="patrones">
+  <div class="container">
+    <h2>Patrones identificados</h2>
+    <p class="section-desc">
+      Cruces entre datos de uso, trayectorias, sesiones grabadas y soporte que configuran los temas principales.
+    </p>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Patrón detectado</th>
+            <th>Intensidad</th>
+            <th>Fuentes</th>
+            <th>Pregunta que queda abierta</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>28% de los usuarios necesita navegar a otro lugar antes de completar la asignación</td>
+            <td><span class="badge-pill badge-red">Alta</span></td>
+            <td>Trayectorias de uso + sesiones grabadas</td>
+            <td>¿Qué dato específico van a buscar? ¿Sería suficiente con un buscador en el formulario?</td>
+          </tr>
+          <tr>
+            <td>La carga masiva genera duplicados sin advertencia previa</td>
+            <td><span class="badge-pill badge-red">Alta</span></td>
+            <td>Soporte (10 tickets a SAC, CSAT 3,4)</td>
+            <td>¿Cuántos tenants conviven con duplicados sin contactar soporte?</td>
+          </tr>
+          <tr>
+            <td>Confusión entre "modelo" (catálogo) y "bien" (unidad) pese a que la documentación la explica</td>
+            <td><span class="badge-pill badge-orange">Media</span></td>
+            <td>Soporte (20 tickets a SAC) + artículos de ayuda + entrevista discovery</td>
+            <td>¿Los artículos están vinculados desde la interfaz del módulo? ¿O solo accesibles desde el buscador del centro de ayuda?</td>
+          </tr>
+          <tr>
+            <td>20 usuarios concentran más de 100 asignaciones cada uno</td>
+            <td><span class="badge-pill badge-orange">Media</span></td>
+            <td>Datos de uso (distribución de frecuencia)</td>
+            <td>¿Estos operadores de volumen necesitan un flujo batch dedicado?</td>
+          </tr>
+          <tr>
+            <td>Retornos rápidos: 2,0 por sesión en la pantalla de Solicitudes</td>
+            <td><span class="badge-pill badge-orange">Media</span></td>
+            <td>Sesiones grabadas (3.900 sesiones)</td>
+            <td>¿Los retornos ocurren desde el detalle de la solicitud o desde el formulario?</td>
+          </tr>
+          <tr>
+            <td>10 de 50 artículos de ayuda con votos negativos — todos operativos, ninguno conceptual</td>
+            <td><span class="badge-pill badge-orange">Media</span></td>
+            <td>Artículos de ayuda (votos de usuarios)</td>
+            <td>¿Los artículos operativos cubren errores comunes y recuperación, o solo el camino feliz?</td>
+          </tr>
+          <tr>
+            <td>200 asignaciones completadas sin evento de inicio — hay puertas de entrada no instrumentadas</td>
+            <td><span class="badge-pill badge-blue">Baja</span></td>
+            <td>Datos de uso (11.000 completadas vs 10.800 iniciadas)</td>
+            <td>¿Qué puntos de entrada no están instrumentados? ¿Inventario directo? ¿Workflow?</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout orange" style="margin-top:24px">
+      <div class="callout-icon">🔍</div>
+      <div class="callout-body">
+        <strong>Lo que los datos no pudieron responder</strong>
+        <p>El desglose por día de la semana no está disponible en la instrumentación. El tracking está roto para tenants con devolución activa, por lo que el volumen real es mayor al reportado. El journey cubre los últimos 30 días (limitación de la API), no el período completo. No fue posible determinar si los artículos de ayuda están vinculados desde la interfaz del módulo o solo son accesibles desde el buscador del centro de ayuda.</p>
+      </div>
+    </div>
+
+    <div class="callout blue" style="margin-top:14px">
+      <div class="callout-icon">⚖</div>
+      <div class="callout-body">
+        <strong>Contradicción sin resolver: más completadas que iniciadas</strong>
+        <p>Se registraron 11.000 asignaciones completadas pero solo 10.800 inicios. Existen puntos de entrada al flujo de asignación que no pasan por el evento de inicio instrumentado — posiblemente desde Inventario o desde un workflow automatizado.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="fuentes">
+  <div class="container">
+    <h2>Fuentes y metodología</h2>
+    <p class="section-desc">
+      Control de Bienes · Asignación desde la central de Solicitudes · Todos los países · 1 de enero a 11 de junio de 2026
+    </p>
+
+    <div class="source-grid">
+      <div class="source-card">
+        <div class="source-num">Fuente 1</div>
+        <div class="source-name">Datos de uso</div>
+        <div class="source-desc">Eventos Start_Assign_Item_Request y Assign_Item_Request. Funnel, segmentación por frecuencia, distribución temporal, fuente de la asignación. Se excluyeron tenants sin evento Assign y ambientes de prueba.</div>
+      </div>
+      <div class="source-card">
+        <div class="source-num">Fuente 2</div>
+        <div class="source-name">Trayectorias de navegación</div>
+        <div class="source-desc">Customer Journey de 150 usuarios en los últimos 30 días. Mapa de eventos post-inicio de asignación con ventana de sesión.</div>
+      </div>
+      <div class="source-card">
+        <div class="source-num">Fuente 3</div>
+        <div class="source-name">Tickets a SAC</div>
+        <div class="source-desc">120 tickets a SAC bajo Control de Bienes, 20 sobre asignación. CSAT promedio 4,4. Textos completos de las 5 con usuario enojado.</div>
+      </div>
+      <div class="source-card">
+        <div class="source-num">Fuente 4</div>
+        <div class="source-name">Sesiones grabadas</div>
+        <div class="source-desc">3.900 sesiones en /item_management/requests. 8 sesiones con quick backs analizadas con trayectoria de URLs completa.</div>
+      </div>
+      <div class="source-card">
+        <div class="source-num">Fuente 5</div>
+        <div class="source-name">Artículos de ayuda</div>
+        <div class="source-desc">50 artículos en la categoría Control de Bienes, 6 secciones. 10 artículos con votos negativos (todos operativos), 1 con votos positivos. Cruce contra hallazgos de soporte y confusión conceptual.</div>
+      </div>
+      <div class="source-card" style="border-top-color: var(--gray-400)">
+        <div class="source-num" style="color:var(--gray-500)">No disponible</div>
+        <div class="source-name" style="color:var(--gray-600)">Entrevistas discovery</div>
+        <div class="source-desc">1 entrevista relevante (bajo umbral mínimo de 2). Usada como corroboración, no como fuente independiente.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <strong>Cauce · Control de Bienes</strong> · Informe generado el 11 de septiembre de 2026<br>
+  <span style="font-size:11px;opacity:.6;margin-top:4px;display:block">
+    Generado con el skill user-discovery-report
+  </span>
+  <span style="font-size:11px;opacity:.45;margin-top:16px;display:block;max-width:640px;margin-left:auto;margin-right:auto;line-height:1.7">
+    Este informe está orientado a encontrar fricciones. Las fuentes que usa — tickets a SAC, sesiones grabadas, búsquedas en ayuda — capturan principalmente problemas. Los usuarios que completaron su tarea sin dificultad no generan señal en esas fuentes. Los hallazgos son reales, pero no representan necesariamente la experiencia de la mayoría.
+  </span>
+</footer>
+
+</body>
+</html>
